@@ -12,7 +12,8 @@ class State {
 class App extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
-        this.state = new State();
+        const state = new State();
+        this.state = state;
     }
 
     render() {
@@ -21,7 +22,7 @@ class App extends Component<Props, State> {
                 value={this.state.filePath}
                 onChange={this.receiveFilePathChange.bind(this)}
             />
-            <button className="w3-btn w3-black">WHY</button>
+            <button className="w3-btn w3-black">LOAD</button>
         </div>;
     }
 
