@@ -1,1 +1,1 @@
-go run app.go
+go build && git-stories.exe
