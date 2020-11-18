@@ -1,7 +1,11 @@
 package main
 
+import "net/http"
+import "log"
+
 func main() {
 	println("Now starting...")
-	var webApp = WebApp{}
+	var webApp = CreateWebApp()
 	webApp.Start()
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
