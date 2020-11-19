@@ -1,6 +1,8 @@
 package git_client
 
 import (
+	"strconv"
+	"time"
 	"os/exec"
 	"strings"
 )
@@ -41,6 +43,19 @@ func (this *GitClient) ReadLog() ([]LogEntryRow, error) {
 	} else {
 		return nil, e
 	}
+}
+
+func (this *GitClient) ReadCommitDate(commitHash string) (time.Time, error) {
+	var outputText, runError = this.Run([]string{"show", "--format=%at", "--quiet", commitHash})
+	if runError != nil {
+		return time.Unix(0, 0), runError
+	}
+	var text = string(outputText)
+	var second, numberError = strconv.ParseInt(text, 10, 64)
+	if (numberError != nil) {
+		return time.Unix(0, 0), numberError
+	}
+	return time.Unix(second, 0), nil
 }
 
 func (this *GitClient) GetCommandName() string {
