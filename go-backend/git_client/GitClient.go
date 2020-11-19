@@ -1,10 +1,10 @@
 package git_client
 
 import (
-	"strconv"
-	"time"
 	"os/exec"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type GitClient struct {
@@ -52,10 +52,36 @@ func (this *GitClient) ReadCommitDate(commitHash string) (time.Time, error) {
 	}
 	var text = string(outputText)
 	var second, numberError = strconv.ParseInt(text, 10, 64)
-	if (numberError != nil) {
+	if numberError != nil {
 		return time.Unix(0, 0), numberError
 	}
 	return time.Unix(second, 0), nil
+}
+
+func checkSpaceOrTab(r rune) bool {
+	return r == ' ' || r == '\t'
+}
+
+func (this *GitClient) ReadDiffSummary(commitHash1, commitHash2 string) ([]DiffSummaryRow, error) {
+	var outputText, runError = this.Run([]string{"diff", "--numstat", commitHash1, commitHash2})
+	if runError != nil {
+		return nil, runError
+	}
+	var lines = strings.Split(string(outputText), "\n")
+	var rows []DiffSummaryRow
+	for i := 0; i < len(lines); i++ {
+		var line = strings.TrimSpace(lines[i])
+		if len(line) > 0 {
+			var parts = strings.FieldsFunc(line, checkSpaceOrTab)
+			var row = DiffSummaryRow{
+				InsertionCount: diffSummaryPartToLong(parts[0]),
+				DeletionCount:  diffSummaryPartToLong(parts[1]),
+				FilePath:       parts[2],
+			}
+			rows = append(rows, row)
+		}
+	}
+	return rows, nil
 }
 
 func (this *GitClient) GetCommandName() string {
