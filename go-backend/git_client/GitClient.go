@@ -91,22 +91,30 @@ func (this *GitClient) ReadAllDetailedLog() ([]DetailedLogEntryRow, error) {
 	}
 	var rows []DetailedLogEntryRow
 	for _, entry := range logEntries {
-		var commitDate, commitDateError = this.ReadCommitDate(entry.CommitHash)
-		if nil != commitDateError {
-			return nil, commitDateError
-		}
-		var diffSummary, diffSummaryError = this.ReadDiffSummary(entry.ParentHashes[0], entry.CommitHash)
-		if nil != diffSummaryError {
-			return nil, diffSummaryError
-		}
-		var row = DetailedLogEntryRow{
-			LogEntry:    entry,
-			Time:        commitDate,
-			DiffSummary: diffSummary,
+		var row, e = this.ReadDetailedLogEntryRow(entry)
+		if nil != e {
+			return nil, e
 		}
 		rows = append(rows, row)
 	}
 	return rows, nil
+}
+
+func (this *GitClient) ReadDetailedLogEntryRow(logEntry LogEntryRow) (DetailedLogEntryRow, error) {
+	var commitDate, commitDateError = this.ReadCommitDate(logEntry.CommitHash)
+	if nil != commitDateError {
+		return DetailedLogEntryRow{}, commitDateError
+	}
+	var diffSummary, diffSummaryError = this.ReadDiffSummary(logEntry.ParentHashes[0], logEntry.CommitHash)
+	if nil != diffSummaryError {
+		return DetailedLogEntryRow{}, diffSummaryError
+	}
+	var row = DetailedLogEntryRow{
+		LogEntry:    logEntry,
+		Time:        commitDate,
+		DiffSummary: diffSummary,
+	}
+	return row, nil
 }
 
 func (this *GitClient) GetCommandName() string {
