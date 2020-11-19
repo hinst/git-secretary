@@ -23,6 +23,7 @@ func (this *WebApp) Start() {
 	this.handle(webApiPath+"/repoHistory", this.getRepoHistory)
 
 	this.handle(webApiPath+"/commits", this.commits)
+	this.handle(webApiPath+"/fullLog", this.getFullLog)
 }
 
 func (this *WebApp) handle(path string, function http.HandlerFunc) {
@@ -40,6 +41,15 @@ func (this *WebApp) commits(responseWriter http.ResponseWriter, request *http.Re
 	if e == nil {
 		this.writeJson(responseWriter, commits)
 	}
+}
+
+func (this *WebApp) getFullLog(responseWriter http.ResponseWriter, request *http.Request) {
+	var directory = request.URL.Query()["directory"][0]
+	var log, e = git_client.CreateGitClient(directory).ReadAllDetailedLog()
+	if nil != e {
+		panic(e)
+	}
+	this.writeJson(responseWriter, log)
 }
 
 func (this *WebApp) writeJson(responseWriter http.ResponseWriter, o interface{}) {
