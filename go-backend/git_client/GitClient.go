@@ -27,7 +27,7 @@ func (this *GitClient) Run(args []string) (string, error) {
 }
 
 func (this *GitClient) ReadLog() ([]LogEntryRow, error) {
-	var outputText, e = this.Run([]string{"log", "--format=%H %P"})
+	var outputText, e = this.Run([]string{"log", "HEAD", "--format=%H %P"})
 	if e == nil {
 		var lines = strings.Split(outputText, "\n")
 		var rows []LogEntryRow
@@ -67,7 +67,7 @@ func (this *GitClient) ReadDiffSummary(commitHash1, commitHash2 string) ([]DiffS
 	if runError != nil {
 		return nil, runError
 	}
-	var lines = strings.Split(string(outputText), "\n")
+	var lines = strings.Split(outputText, "\n")
 	var rows []DiffSummaryRow
 	for i := 0; i < len(lines); i++ {
 		var line = strings.TrimSpace(lines[i])
@@ -80,6 +80,31 @@ func (this *GitClient) ReadDiffSummary(commitHash1, commitHash2 string) ([]DiffS
 			}
 			rows = append(rows, row)
 		}
+	}
+	return rows, nil
+}
+
+func (this *GitClient) ReadAllDetailedLog() ([]DetailedLogEntryRow, error) {
+	var logEntries, readError = this.ReadLog()
+	if nil != readError {
+		return nil, readError
+	}
+	var rows []DetailedLogEntryRow
+	for _, entry := range logEntries {
+		var commitDate, commitDateError = this.ReadCommitDate(entry.CommitHash)
+		if nil != commitDateError {
+			return nil, commitDateError
+		}
+		var diffSummary, diffSummaryError = this.ReadDiffSummary(entry.ParentHashes[0], entry.CommitHash)
+		if nil != diffSummaryError {
+			return nil, diffSummaryError
+		}
+		var row = DetailedLogEntryRow{
+			LogEntry:    entry,
+			Time:        commitDate,
+			DiffSummary: diffSummary,
+		}
+		rows = append(rows, row)
 	}
 	return rows, nil
 }
