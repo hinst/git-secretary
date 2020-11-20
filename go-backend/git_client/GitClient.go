@@ -107,20 +107,28 @@ func (this *GitClient) ReadDetailedLogEntryRow(logEntry LogEntryRow) (DetailedLo
 	if nil != commitDateError {
 		return DetailedLogEntryRow{}, commitDateError
 	}
-	var parentHash string
+	var parentHashes []string
 	if len(logEntry.ParentHashes) > 0 {
-		parentHash = logEntry.ParentHashes[0]
+		parentHashes = logEntry.ParentHashes
 	} else {
-		parentHash = GitRootNodeHash
+		parentHashes = []string{GitRootNodeHash}
 	}
-	var diffSummary, diffSummaryError = this.ReadDiffSummary(parentHash, logEntry.CommitHash)
-	if nil != diffSummaryError {
-		return DetailedLogEntryRow{}, diffSummaryError
+	var parentInfos []ParentInfoEntry
+	for _, parentHash := range parentHashes {
+		var diffSummary, diffSummaryError = this.ReadDiffSummary(parentHash, logEntry.CommitHash)
+		if nil != diffSummaryError {
+			return DetailedLogEntryRow{}, diffSummaryError
+		}
+		var parentInfo = ParentInfoEntry{
+			CommitHash:  parentHash,
+			DiffSummary: diffSummary,
+		}
+		parentInfos = append(parentInfos, parentInfo)
 	}
 	var row = DetailedLogEntryRow{
-		LogEntry:    logEntry,
-		Time:        commitDate,
-		DiffSummary: diffSummary,
+		CommitHash: logEntry.CommitHash,
+		Time:       commitDate,
+		Parents:    parentInfos,
 	}
 	return row, nil
 }

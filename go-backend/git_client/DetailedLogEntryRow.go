@@ -3,7 +3,12 @@ package git_client
 import "time"
 
 type DetailedLogEntryRow struct {
-	LogEntry    LogEntryRow
-	Time        time.Time
+	Time       time.Time
+	Parents    []ParentInfoEntry
+	CommitHash string
+}
+
+type ParentInfoEntry struct {
+	CommitHash  string
 	DiffSummary []DiffSummaryRow
 }
