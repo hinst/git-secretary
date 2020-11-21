@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"git-stories/common"
-	"git-stories/git_client"
+	"github.com/hinst/go-common"
+	"git-stories-server/git_client"
 	"net/http"
 )
 

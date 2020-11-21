@@ -1,0 +1,6 @@
+github.com/hinst/git-stories-api v0.0.0-20201121212951-99a6dda14e38 h1:lSzpfOhLjfMnVZoLZwBNGfxwU1VSQjnRf+2iNXGHAhw=
+github.com/hinst/git-stories-api v0.0.0-20201121212951-99a6dda14e38/go.mod h1:vkA/l2Ljsy2hCAFQutI2OLI10pihY6fum5NSXDPmPC0=
+github.com/hinst/go-common v0.0.0-20201121205642-bc7645b1f2d4 h1:GTpMuPk4g0WF3MPVxi1ngPPvP0Sof8WhdMCFUN0wY5g=
+github.com/hinst/go-common v0.0.0-20201121205642-bc7645b1f2d4/go.mod h1:ALss9OaYUWMxLLY7MdrkXXaKNz214IPgVkRUWjHUOno=
+github.com/hinst/go-common v0.0.0-20201121211255-9c92c28a12c4 h1:Z1YSlkv2zixDwYFgYBI6o5OmvpJBnydjo01PNI/FdLo=
+github.com/hinst/go-common v0.0.0-20201121211255-9c92c28a12c4/go.mod h1:ALss9OaYUWMxLLY7MdrkXXaKNz214IPgVkRUWjHUOno=
