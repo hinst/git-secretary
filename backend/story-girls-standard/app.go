@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	var reader = bufio.NewReader(os.Stdin)
+	var reader = bufio.NewReaderSize(os.Stdin, 512)
 	var input, inputError = ioutil.ReadAll(reader)
 	common.AssertError(inputError)
 	var entries []git_stories_api.DetailedLogEntryRow

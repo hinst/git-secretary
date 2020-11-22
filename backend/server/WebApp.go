@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"git-stories-server/git_client"
 	"github.com/hinst/go-common"
@@ -97,17 +98,17 @@ func (this *WebApp) getStory(responseWriter http.ResponseWriter, request *http.R
 	if nil != writerError {
 		panic(writerError)
 	}
-	var _, writeError = writer.Write(logBytes)
-	if nil != writeError {
-		panic(writeError)
-	}
+	var bufferedWriter = bufio.NewWriterSize(writer, 1000)
+	var _, bufferedWriteError = bufferedWriter.Write(logBytes)
+	common.AssertError(bufferedWriteError)
+	common.AssertError(bufferedWriter.Flush())
 	var closeError = writer.Close()
 	if nil != closeError {
 		panic(closeError)
 	}
 	var output, pluginOutputError = command.CombinedOutput()
 	if nil != pluginOutputError {
-		panic(pluginOutputError)
+		panic(common.WrapError(string(output), pluginOutputError))
 	}
 	var _, _ = responseWriter.Write(output)
 }
