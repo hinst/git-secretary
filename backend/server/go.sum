@@ -6,3 +6,5 @@ github.com/hinst/go-common v0.0.0-20201121211255-9c92c28a12c4 h1:Z1YSlkv2zixDwYF
 github.com/hinst/go-common v0.0.0-20201121211255-9c92c28a12c4/go.mod h1:ALss9OaYUWMxLLY7MdrkXXaKNz214IPgVkRUWjHUOno=
 github.com/hinst/go-common v0.0.0-20201122150352-1d8b7bd4249a h1:vJ5FoGdaBWQJm7FmQHVz/Zt7HTZy8bDmplVwaD7+y4I=
 github.com/hinst/go-common v0.0.0-20201122150352-1d8b7bd4249a/go.mod h1:ALss9OaYUWMxLLY7MdrkXXaKNz214IPgVkRUWjHUOno=
+github.com/hinst/go-common v0.0.0-20201122173532-b40be0b25ee5 h1:VgdFRBxL+fhvYnSbJBeb1FLll1LHyK+Z/Fpqa5s0x9Q=
+github.com/hinst/go-common v0.0.0-20201122173532-b40be0b25ee5/go.mod h1:ALss9OaYUWMxLLY7MdrkXXaKNz214IPgVkRUWjHUOno=
