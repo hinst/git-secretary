@@ -30,8 +30,11 @@ func (this *GitClient) Run(args []string) (string, error) {
 	}
 }
 
-func (this *GitClient) ReadLog() ([]LogEntryRow, error) {
-	var outputText, e = this.Run([]string{"log", "HEAD", "--format=%H %P"})
+func (this *GitClient) ReadLog(lengthLimit int) ([]LogEntryRow, error) {
+	var outputText, e = this.Run([]string{"log", "HEAD",
+		"--format=%H %P",
+		"-n", strconv.Itoa(lengthLimit),
+	})
 	if e == nil {
 		var lines = strings.Split(outputText, "\n")
 		var rows []LogEntryRow
@@ -87,8 +90,8 @@ func (this *GitClient) ReadDiffSummary(commitHash1, commitHash2 string) ([]git_s
 	return rows, nil
 }
 
-func (this *GitClient) ReadAllDetailedLog() ([]git_stories_api.DetailedLogEntryRow, error) {
-	var logEntries, readError = this.ReadLog()
+func (this *GitClient) ReadDetailedLog(lengthLimit int) ([]git_stories_api.DetailedLogEntryRow, error) {
+	var logEntries, readError = this.ReadLog(lengthLimit)
 	if nil != readError {
 		return nil, readError
 	}
@@ -153,4 +156,3 @@ func diffSummaryPartToLong(text string) int {
 		return result
 	}
 }
-
