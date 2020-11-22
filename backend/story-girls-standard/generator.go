@@ -18,7 +18,9 @@ type Generator struct {
 var girlNames = loadGirlNames()
 
 func loadGirlNames() []string {
-	var names = strings.Split(string(_resourcesGirl_namesTxt), "\n")
+	var girlNamesData, assetError = Asset("resources/girl_names.txt")
+	common.AssertError(assetError)
+	var names = strings.Split(string(girlNamesData), "\n")
 	var processedNames []string
 	for _, name := range names {
 		name = strings.TrimSpace(name)
@@ -30,12 +32,12 @@ func loadGirlNames() []string {
 }
 
 func (this *Generator) Generate() []StoryEntry {
-	var storyEntries []StoryEntry
+	var allStoryEntries []StoryEntry
 	for _, logEntry := range this.Entries {
 		var storyEntries = this.generateEntries(logEntry)
-		storyEntries = append(storyEntries, storyEntries...)
+		allStoryEntries = append(allStoryEntries, storyEntries...)
 	}
-	return storyEntries
+	return allStoryEntries
 }
 
 func (this *Generator) generateEntries(entry git_stories_api.DetailedLogEntryRow) []StoryEntry {

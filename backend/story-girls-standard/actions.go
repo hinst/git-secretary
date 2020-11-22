@@ -19,6 +19,7 @@ var Actions = ActionsStruct{
 		"{{.Name}} baked {{.InsertionCount}} muffin{{.SI}}",
 		"{{.Name}} baked {{.InsertionCount}} cookie{{.SI}}",
 		"{{.Name}} built a sandcastle with {{.InsertionCount}} tower{{.SI}} in it",
+		"{{.Name}} watched {{.InsertionCount}} cat video{{.SI}}",
 	},
 	DeletionActions: []string{
 		"{{.Name}} ate {{.DeletionCount}} muffin{{.SD}}",
@@ -26,7 +27,8 @@ var Actions = ActionsStruct{
 		"{{.Name}} kicked {{.DeletionCount}} traffic cone{{.SD}}",
 	},
 	CombinedActions: []string{
-		"{{.Name}} baked {{.InsertionCount}} muffin{{.SI}} and ate {{.DeletionCount}}{{ if neq .InsertionCount 0 }} of them{{end}}",
-		"{{.Name}} baked {{.InsertionCount}} cookie{{.SI}} and ate {{.DeletionCount}}{{ if neq .InsertionCount 0 }} of them{{end}}",
+		"{{.Name}} baked {{.InsertionCount}} muffin{{.SI}} and ate {{.DeletionCount}} {{if eq .DeletionCount 1}}muffin{{else}}of them{{end}}",
+		"{{.Name}} baked {{.InsertionCount}} cookie{{.SI}} and ate {{.DeletionCount}} {{if eq .DeletionCount 1}}cookie{{else}}of them{{end}}",
+		"{{.Name}} washed {{.InsertionCount}} shirt{{.SI}} and dried {{.DeletionCount}} {{if eq .DeletionCount 1}}shirt{{else}}of them{{end}}",
 	},
 }
