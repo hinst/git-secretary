@@ -81,34 +81,25 @@ func (this *WebApp) getStory(responseWriter http.ResponseWriter, request *http.R
 		lengthLimit = extractedLengthLimit
 	}
 	var log, gitError = git_client.CreateGitClient(directory).ReadDetailedLog(lengthLimit)
-	if nil != gitError {
-		panic(gitError)
-	}
+	common.AssertError(gitError)
 	var logBytes, jsonWriteError = json.Marshal(log)
-	if nil != jsonWriteError {
-		panic(jsonWriteError)
-	}
+	common.AssertError(jsonWriteError)
 	var workingDirectory, getwdError = os.Getwd()
-	if nil != getwdError {
-		panic(getwdError)
-	}
+	common.AssertError(getwdError)
 	var pluginFilePath = workingDirectory + "\\" + this.configuration.Plugin
 	var command = exec.Command(pluginFilePath)
 	var writer, writerError = command.StdinPipe()
-	if nil != writerError {
-		panic(writerError)
-	}
-	var bufferedWriter = bufio.NewWriterSize(writer, 1000)
+	var output, pluginOutputError = command.StdoutPipe()
+	common.AssertError(writerError)
+	common.AssertError(command.Start())
+	var bufferedWriter = bufio.NewWriter(writer)
 	var _, bufferedWriteError = bufferedWriter.Write(logBytes)
 	common.AssertError(bufferedWriteError)
 	common.AssertError(bufferedWriter.Flush())
 	var closeError = writer.Close()
-	if nil != closeError {
-		panic(closeError)
-	}
-	var output, pluginOutputError = command.CombinedOutput()
-	if nil != pluginOutputError {
-		panic(common.WrapError(string(output), pluginOutputError))
-	}
-	var _, _ = responseWriter.Write(output)
+	common.AssertError(closeError)
+	common.AssertError(pluginOutputError)
+	var outputData, outputError = ioutil.ReadAll(bufio.NewReader(output))
+	common.AssertError(outputError)
+	var _, _ = responseWriter.Write(outputData)
 }
