@@ -11,6 +11,7 @@ type ActionArgs struct {
 	InsertionCount int
 	DeletionCount  int
 	SI             string
+	SD             string
 }
 
 var Actions = ActionsStruct{
