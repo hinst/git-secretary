@@ -79,7 +79,6 @@ func (this *WebApp) getStory(responseWriter http.ResponseWriter, request *http.R
 		}
 		lengthLimit = extractedLengthLimit
 	}
-
 	var log, gitError = git_client.CreateGitClient(directory).ReadDetailedLog(lengthLimit)
 	if nil != gitError {
 		panic(gitError)
