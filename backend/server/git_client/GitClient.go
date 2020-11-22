@@ -22,24 +22,29 @@ func (this *GitClient) Run(args []string) (string, error) {
 	var command = exec.Command(this.GetCommandName(), args...)
 	command.Dir = this.directory
 	var output, e = command.CombinedOutput()
+	var outputText = string(output)
 	if e == nil {
-		var outputText = string(output)
 		return outputText, e
 	} else {
-		return "", e
+		var errorMessage = "Error running git " + strings.Join(args, " ") + "\n" + outputText
+		return "", common.WrapError(errorMessage, e)
 	}
 }
 
 func (this *GitClient) ReadLog(lengthLimit int) ([]LogEntryRow, error) {
-	var outputText, e = this.Run([]string{"log", "HEAD",
-		"--format=%H %P",
+	var args = []string{"log",
+		"--format=\"%H %P\"",
 		"-n", strconv.Itoa(lengthLimit),
-	})
+		"HEAD",
+	}
+	var outputText, e = this.Run(args)
 	if e == nil {
 		var lines = strings.Split(outputText, "\n")
 		var rows []LogEntryRow
 		for i := 0; i < len(lines); i++ {
-			var line = strings.TrimSpace(lines[i])
+			var line = lines[i]
+			line = strings.Trim(line, "\"")
+			line = strings.TrimSpace(line)
 			if len(line) > 0 {
 				var logEntryRow LogEntryRow
 				logEntryRow.ParseGitLine(line)
