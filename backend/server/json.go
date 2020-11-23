@@ -6,8 +6,10 @@ import (
 	"net/http"
 )
 
+const contentTypeJson = "application/json"
+
 func writeJson(responseWriter http.ResponseWriter, o interface{}) {
-	responseWriter.Header().Add("Content-Type", "application/json")
+	responseWriter.Header().Add(contentTypeHeaderKey, contentTypeJson)
 	var _, e = responseWriter.Write(toJson(o))
 	common.Use(e)
 }

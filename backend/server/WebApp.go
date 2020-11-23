@@ -30,7 +30,7 @@ func (this *WebApp) Start() {
 	this.handle(webApiPath+"/repoHistory", this.getRepoHistory)
 	this.handle(webApiPath+"/commits", this.commits)
 	this.handle(webApiPath+"/fullLog", this.getFullLog)
-	this.handle(webApiPath+"/story", this.getStory)
+	this.handle(webApiPath+"/stories", this.getStories)
 }
 
 func (this *WebApp) loadConfiguration() {
@@ -70,7 +70,7 @@ func (this *WebApp) getFullLog(responseWriter http.ResponseWriter, request *http
 	writeJson(responseWriter, log)
 }
 
-func (this *WebApp) getStory(responseWriter http.ResponseWriter, request *http.Request) {
+func (this *WebApp) getStories(responseWriter http.ResponseWriter, request *http.Request) {
 	var directory = request.URL.Query()["directory"][0]
 	var lengthLimit = 10
 	if len(request.URL.Query()["lengthLimit"]) > 0 {
@@ -100,6 +100,7 @@ func (this *WebApp) getStory(responseWriter http.ResponseWriter, request *http.R
 	common.AssertError(closeError)
 	var outputData, outputError = ioutil.ReadAll(bufio.NewReader(output))
 	common.AssertError(outputError)
+	responseWriter.Header().Add(contentTypeHeaderKey, contentTypeJson)
 	var _, ignoredResponseOutputError = responseWriter.Write(outputData)
 	common.Use(ignoredResponseOutputError)
 }
