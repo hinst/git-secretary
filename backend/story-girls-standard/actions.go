@@ -41,7 +41,7 @@ var Actions = ActionsStruct{
 		"{{.Name}} planted {{.InsertionCount}} flower{{.IS}} and {{.DeletionCount}} vegetable{{.DS}}",
 		"{{.Name}} knitted {{.InsertionCount}} mitten{{.IS}} and {{.DeletionCount}} sock{{.DS}}",
 		"{{.Name}} napped {{.InsertionCount}} minute{{.IS}} and walked around the house {{.DeletionCount}} minute{{.DS}}",
-		"{{.Name}} read {{.InsertionCount}} page{{.IS}} in a book and" +
+		"{{.Name}} read {{.InsertionCount}} page{{.IS}} in a book and " +
 			"torn {{.DeletionCount}} page{{.DS}} out of the book because {{.HeShe}} didn't like them",
 	},
 }
