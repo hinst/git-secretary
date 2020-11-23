@@ -44,7 +44,7 @@ func (this *Generator) generateEntries(entry git_stories_api.DetailedLogEntryRow
 	var entries []StoryEntry
 	for _, parent := range entry.Parents {
 		for _, diffSummaryRow := range parent.DiffSummary {
-			var description = this.generateStoryDescriptionFromDiffRow(diffSummaryRow)
+			var description = this.generateStoryDescriptionFromDiffRow(entry.CommitHash, diffSummaryRow)
 			if "" != description {
 				var storyEntry = StoryEntry{
 					Time:        entry.Time,
@@ -59,11 +59,11 @@ func (this *Generator) generateEntries(entry git_stories_api.DetailedLogEntryRow
 	return entries
 }
 
-func (this *Generator) generateStoryDescriptionFromDiffRow(row git_stories_api.DiffSummaryRow) string {
+func (this *Generator) generateStoryDescriptionFromDiffRow(commitHash string, row git_stories_api.DiffSummaryRow) string {
 	var nameHash = getHashFromString(row.FilePath)
 	var nameIndex = nameHash % uint32(len(girlNames))
 	var characterName = girlNames[nameIndex]
-	var actionHash = getHashFromString(row.FilePath)
+	var actionHash = getHashFromString(commitHash)
 	var actionTemplate string
 	actionTemplate = this.getActionTemplate(row, actionHash, actionTemplate)
 	var actionArgs = getActionArgs(row)
