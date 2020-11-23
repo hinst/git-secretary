@@ -1,34 +1,11 @@
 import React, { ChangeEvent, Component } from 'react';
 import './w3.css';
 import './git-stories.css'
+import { RepoHistoryViewer } from './RepoHistoryViewer';
 
-class Props {
-}
-
-class State {
-    filePath: string = '';
-}
-
-class App extends Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-        const state = new State();
-        this.state = state;
-    }
-
+class App extends Component {
     render() {
-        return <div className="w3-panel">
-            <input type="text"
-                value={this.state.filePath}
-                onChange={this.receiveFilePathChange.bind(this)}
-            />
-            <button className="w3-btn w3-black">LOAD</button>
-        </div>;
-    }
-
-    private receiveFilePathChange(event: ChangeEvent<HTMLInputElement>) {
-        const filePath = event.target['value'];
-        this.setState({filePath});
+        return <RepoHistoryViewer/>
     }
 }
 
