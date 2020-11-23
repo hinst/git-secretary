@@ -10,25 +10,38 @@ type ActionArgs struct {
 	Name           string
 	InsertionCount int
 	DeletionCount  int
-	SI             string
-	SD             string
+	IS             string
+	IES            string
+	DS             string
+	DES            string
+	HeShe          string
 }
 
 var Actions = ActionsStruct{
 	InsertionActions: []string{
-		"{{.Name}} baked {{.InsertionCount}} muffin{{.SI}}",
-		"{{.Name}} baked {{.InsertionCount}} cookie{{.SI}}",
-		"{{.Name}} built a sandcastle with {{.InsertionCount}} tower{{.SI}} in it",
-		"{{.Name}} watched {{.InsertionCount}} cat video{{.SI}}",
+		"{{.Name}} baked {{.InsertionCount}} muffin{{.IS}}",
+		"{{.Name}} baked {{.InsertionCount}} cookie{{.IS}}",
+		"{{.Name}} built a sandcastle with {{.InsertionCount}} tower{{.IS}}",
+		"{{.Name}} watched {{.InsertionCount}} cat video{{.IS}}",
+		"{{.Name}} planted {{.InsertionCount}} flower{{.IS}}",
+		"{{.Name}} meditated {{.InsertionCount}} minute{{.IS}}",
+		"{{.Name}} read {{.InsertionCount}} page{{.IS}} in a book",
 	},
 	DeletionActions: []string{
-		"{{.Name}} ate {{.DeletionCount}} muffin{{.SD}}",
-		"{{.Name}} ate {{.DeletionCount}} cookie{{.SD}}",
-		"{{.Name}} kicked {{.DeletionCount}} traffic cone{{.SD}}",
+		"{{.Name}} ate {{.DeletionCount}} muffin{{.DS}}",
+		"{{.Name}} ate {{.DeletionCount}} cookie{{.DS}}",
+		"{{.Name}} kicked {{.DeletionCount}} traffic cone{{.DS}}",
+		"{{.Name}} washed {{.DeletionCount}} dish{{.DES}}",
+		"{{.Name}} washed {{.DeletionCount}} spoon{{.DS}}",
 	},
 	CombinedActions: []string{
-		"{{.Name}} baked {{.InsertionCount}} muffin{{.SI}} and ate {{.DeletionCount}} {{if eq .DeletionCount 1}}muffin{{else}}of them{{end}}",
-		"{{.Name}} baked {{.InsertionCount}} cookie{{.SI}} and ate {{.DeletionCount}} {{if eq .DeletionCount 1}}cookie{{else}}of them{{end}}",
-		"{{.Name}} washed {{.InsertionCount}} shirt{{.SI}} and dried {{.DeletionCount}} {{if eq .DeletionCount 1}}shirt{{else}}of them{{end}}",
+		"{{.Name}} baked {{.InsertionCount}} muffin{{.IS}} and ate {{.DeletionCount}} muffin{{.DS}}",
+		"{{.Name}} baked {{.InsertionCount}} cookie{{.IS}} and ate {{.DeletionCount}} cookie{{.DS}}",
+		"{{.Name}} washed {{.InsertionCount}} shirt{{.IS}} and dried {{.DeletionCount}} shirt{{.DS}}",
+		"{{.Name}} planted {{.InsertionCount}} flower{{.IS}} and {{.DeletionCount}} vegetable{{.DS}}",
+		"{{.Name}} knitted {{.InsertionCount}} mitten{{.IS}} and {{.DeletionCount}} sock{{.DS}}",
+		"{{.Name}} napped {{.InsertionCount}} minute{{.IS}} and walked around the house {{.DeletionCount}} minute{{.DS}}",
+		"{{.Name}} read {{.InsertionCount}} page{{.IS}} in a book and" +
+			"torn {{.DeletionCount}} page{{.DS}} out of the book because {{.HeShe}} didn't like them",
 	},
 }

@@ -92,7 +92,8 @@ func (this *Generator) getActionTemplate(row git_stories_api.DiffSummaryRow, act
 
 func getHashFromString(s string) uint32 {
 	var hasher = fnv.New32a()
-	hasher.Write([]byte(s))
+	var _, e = hasher.Write([]byte(s))
+	common.AssertError(e)
 	return hasher.Sum32()
 }
 
@@ -100,12 +101,15 @@ func getActionArgs(row git_stories_api.DiffSummaryRow) ActionArgs {
 	var actionArgs ActionArgs
 	actionArgs.InsertionCount = row.InsertionCount
 	if row.InsertionCount > 1 {
-		actionArgs.SI = "s"
+		actionArgs.IS = "s"
+		actionArgs.IES = "es"
 	}
 	actionArgs.DeletionCount = row.DeletionCount
 	if row.DeletionCount > 1 {
-		actionArgs.SD = "s"
+		actionArgs.DS = "s"
+		actionArgs.DES = "es"
 	}
+	actionArgs.HeShe = "she"
 	return actionArgs
 }
 
