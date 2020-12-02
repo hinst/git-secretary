@@ -5,7 +5,8 @@ import { RepoHistoryViewer } from './RepoHistoryViewer';
 
 class App extends Component {
     render() {
-        return <RepoHistoryViewer/>
+        document.title = 'Git Stories';
+        return <RepoHistoryViewer/>;
     }
 }
 
