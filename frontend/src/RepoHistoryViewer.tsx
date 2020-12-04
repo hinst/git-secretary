@@ -81,7 +81,8 @@ export class RepoHistoryViewer extends Component<Props, State> {
     }
 
     private renderStoryEntry(entry: StoryEntry) {
-        return <li>
+        const key = entry.CommitHash + ' ' + entry.SourceFilePath;
+        return <li key={key}>
             {entry.Description}
         </li>;
     }

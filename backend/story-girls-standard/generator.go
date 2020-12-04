@@ -47,10 +47,11 @@ func (this *Generator) generateEntries(entry git_stories_api.DetailedLogEntryRow
 			var description = this.generateStoryDescriptionFromDiffRow(entry.CommitHash, diffSummaryRow)
 			if "" != description {
 				var storyEntry = StoryEntry{
-					Time:        entry.Time,
-					CommitHash:  entry.CommitHash,
-					ParentHash:  parent.CommitHash,
-					Description: description,
+					Time:           entry.Time,
+					CommitHash:     entry.CommitHash,
+					ParentHash:     parent.CommitHash,
+					Description:    description,
+					SourceFilePath: diffSummaryRow.FilePath,
 				}
 				entries = append(entries, storyEntry)
 			}

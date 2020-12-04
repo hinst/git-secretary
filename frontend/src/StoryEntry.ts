@@ -5,6 +5,8 @@ export class StoryEntry {
     CommitHash: string;
     ParentHash: string;
     Description: string;
+    SourceFilePath: string;
+
     getTime() {
         return new Date(this.Time);
     }
