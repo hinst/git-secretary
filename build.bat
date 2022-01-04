@@ -1,4 +1,4 @@
-cd server
+cd git-stories-server
 go build -o ../dist/ || exit /b -1
 cd ..
 
