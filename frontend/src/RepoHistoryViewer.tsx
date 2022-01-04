@@ -4,22 +4,22 @@ import { localStorageAppPrefix } from './localStorage';
 import { StoryEntry } from './StoryEntry';
 import lodash from 'lodash';
 import { getStartOfDay } from './dateTime';
-import { LinearProgress } from '@material-ui/core'
+import { LinearProgress } from '@material-ui/core';
 
 class Props {
 }
 
 class State {
-    repoDirectory: string;
-    stories: StoryEntry[];
-    isLoading: boolean;
+    repoDirectory?: string;
+    stories: StoryEntry[] = [];
+    isLoading: boolean = false;
 }
 
 export class RepoHistoryViewer extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
         const state = new State();
-        state.repoDirectory = localStorage.getItem(localStorageAppPrefix + '.repoDirectory');
+        state.repoDirectory = localStorage.getItem(localStorageAppPrefix + '.repoDirectory') || undefined;
         if (null == state.repoDirectory)
             state.repoDirectory = '';
         this.state = state;
@@ -47,7 +47,8 @@ export class RepoHistoryViewer extends Component<Props, State> {
     }
 
     componentDidUpdate() {
-        localStorage.setItem(localStorageAppPrefix + '.repoDirectory', this.state.repoDirectory);
+        if (this.state.repoDirectory)
+            localStorage.setItem(localStorageAppPrefix + '.repoDirectory', this.state.repoDirectory);
     }
 
     private receiveFilePathChange(event: ChangeEvent<HTMLInputElement>) {
@@ -59,7 +60,7 @@ export class RepoHistoryViewer extends Component<Props, State> {
         this.setState({isLoading: true});
         try {
             const url = Common.apiUrl + '/stories?' +
-                'directory=' + encodeURIComponent(this.state.repoDirectory) + '&' +
+                'directory=' + encodeURIComponent(this.state.repoDirectory || '') + '&' +
                 'lengthLimit=20';
             const response = await fetch(url);
             const stories: StoryEntry[] = await response.json();
@@ -72,8 +73,8 @@ export class RepoHistoryViewer extends Component<Props, State> {
     }
 
     private renderStories() {
-        const storyDays = Object.values(
-            lodash.groupBy(this.state.stories, story => getStartOfDay(story.getTime()))
+        const storyDays: StoryEntry[][] = Object.values(
+            lodash.groupBy(this.state.stories, (story: StoryEntry) => getStartOfDay(story.getTime()))
         );
         return <div>
             { storyDays.map(storyDay => this.renderStoryDay(storyDay))  }
