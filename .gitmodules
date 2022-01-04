@@ -1,6 +1,0 @@
-[submodule "backend/go-common"]
-	path = backend/go-common
-	url = https://github.com/hinst/go-common.git
-[submodule "backend/git-stories-api"]
-	path = backend/git-stories-api
-	url = https://github.com/hinst/git-stories-api.git
