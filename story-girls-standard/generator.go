@@ -2,11 +2,13 @@ package main
 
 import (
 	"bytes"
-	"github.com/hinst/git-stories-api"
-	"github.com/hinst/go-common"
+	_ "embed"
 	"hash/fnv"
 	"html/template"
 	"strings"
+
+	git_stories_api "github.com/hinst/git-stories-api"
+	"github.com/hinst/go-common"
 )
 
 type StoryEntry git_stories_api.StoryEntry
@@ -15,12 +17,12 @@ type Generator struct {
 	Entries []git_stories_api.DetailedLogEntryRow
 }
 
+//go:embed resources/girl_names.txt
+var girlNamesData string
 var girlNames = loadGirlNames()
 
 func loadGirlNames() []string {
-	var girlNamesData, assetError = Asset("resources/girl_names.txt")
-	common.AssertError(assetError)
-	var names = strings.Split(string(girlNamesData), "\n")
+	var names = strings.Split(girlNamesData, "\n")
 	var processedNames []string
 	for _, name := range names {
 		name = strings.TrimSpace(name)
@@ -31,21 +33,21 @@ func loadGirlNames() []string {
 	return processedNames
 }
 
-func (this *Generator) Generate() []StoryEntry {
+func (me *Generator) Generate() []StoryEntry {
 	var allStoryEntries []StoryEntry
-	for _, logEntry := range this.Entries {
-		var storyEntries = this.generateEntries(logEntry)
+	for _, logEntry := range me.Entries {
+		var storyEntries = me.generateEntries(logEntry)
 		allStoryEntries = append(allStoryEntries, storyEntries...)
 	}
 	return allStoryEntries
 }
 
-func (this *Generator) generateEntries(entry git_stories_api.DetailedLogEntryRow) []StoryEntry {
+func (me *Generator) generateEntries(entry git_stories_api.DetailedLogEntryRow) []StoryEntry {
 	var entries []StoryEntry
 	for _, parent := range entry.Parents {
 		for _, diffSummaryRow := range parent.DiffSummary {
-			var description = this.generateStoryDescriptionFromDiffRow(entry.CommitHash, diffSummaryRow)
-			if "" != description {
+			var description = me.generateStoryDescriptionFromDiffRow(entry.CommitHash, diffSummaryRow)
+			if len(description) > 0 {
 				var storyEntry = StoryEntry{
 					Time:           entry.Time,
 					CommitHash:     entry.CommitHash,
@@ -60,13 +62,12 @@ func (this *Generator) generateEntries(entry git_stories_api.DetailedLogEntryRow
 	return entries
 }
 
-func (this *Generator) generateStoryDescriptionFromDiffRow(commitHash string, row git_stories_api.DiffSummaryRow) string {
+func (me *Generator) generateStoryDescriptionFromDiffRow(commitHash string, row git_stories_api.DiffSummaryRow) string {
 	var nameHash = getHashFromString(row.FilePath)
 	var nameIndex = nameHash % uint32(len(girlNames))
 	var characterName = girlNames[nameIndex]
 	var actionHash = getHashFromString(commitHash)
-	var actionTemplate string
-	actionTemplate = this.getActionTemplate(row, actionHash, actionTemplate)
+	var actionTemplate = me.getActionTemplate(row, actionHash)
 	var actionArgs = getActionArgs(row)
 	actionArgs.Name = characterName
 	var parsedTemplate, templateError = template.New("").Parse(actionTemplate)
@@ -75,7 +76,7 @@ func (this *Generator) generateStoryDescriptionFromDiffRow(commitHash string, ro
 	return description
 }
 
-func (this *Generator) getActionTemplate(row git_stories_api.DiffSummaryRow, actionHash uint32, actionTemplate string) string {
+func (me *Generator) getActionTemplate(row git_stories_api.DiffSummaryRow, actionHash uint32) (actionTemplate string) {
 	if row.InsertionCount > 0 && row.DeletionCount == 0 {
 		var actionIndex = actionHash % uint32(len(Actions.InsertionActions))
 		actionTemplate = Actions.InsertionActions[actionIndex]
