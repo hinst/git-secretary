@@ -1,19 +1,19 @@
 {
 	"folders": [
 		{
-			"name": "git-stories-api",
 			"path": "git-stories-api"
 		},
 		{
-			"name": "git-stories-server",
 			"path": "git-stories-server"
 		},
 		{
-			"name": "frontend",
 			"path": "frontend"
 		},
 		{
 			"path": "go-common"
+		},
+		{
+			"path": "story-girls-standard"
 		}
 	],
 	"settings": {}
