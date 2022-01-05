@@ -18,8 +18,10 @@ type WebApp struct {
 	configuration Configuration
 }
 
-func CreateWebApp() WebApp {
-	return WebApp{webPath: "/git-stories"}
+func (me *WebApp) Init() {
+	if len(me.webPath) == 0 {
+		me.webPath = "/git-stories"
+	}
 }
 
 func (me *WebApp) Start() {
@@ -46,7 +48,10 @@ func (me *WebApp) loadConfiguration() {
 }
 
 func (me *WebApp) handle(path string, function http.HandlerFunc) {
-	http.HandleFunc(path, function)
+	http.HandleFunc(path, func(responseWriter http.ResponseWriter, request *http.Request) {
+		responseWriter.Header().Set("Access-Control-Allow-Origin", "*")
+		function(responseWriter, request)
+	})
 }
 
 func (me *WebApp) getRepoHistory(_ http.ResponseWriter, request *http.Request) {
@@ -76,9 +81,7 @@ func (me *WebApp) getStories(responseWriter http.ResponseWriter, request *http.R
 	var lengthLimit = 10
 	if len(request.URL.Query()["lengthLimit"]) > 0 {
 		var extractedLengthLimit, e = strconv.Atoi(request.URL.Query()["lengthLimit"][0])
-		if nil != e {
-			panic(e)
-		}
+		common.AssertError(e)
 		lengthLimit = extractedLengthLimit
 	}
 	var log, gitError = git_client.CreateGitClient(directory).ReadDetailedLog(lengthLimit)
