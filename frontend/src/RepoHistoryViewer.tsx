@@ -27,7 +27,7 @@ export class RepoHistoryViewer extends Component<Props, State> {
 
     render() {
         return <div className="w3-panel">
-            <input type="text"
+            <input type="text" className="w3-input"
                 value={this.state.repoDirectory}
                 onChange={this.receiveFilePathChange.bind(this)}
             />
