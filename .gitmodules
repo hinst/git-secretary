@@ -4,6 +4,3 @@
 [submodule "go-common"]
 	path = go-common
 	url = https://github.com/hinst/go-common.git
-[submodule "go-api-file-picker"]
-	path = go-api-file-picker
-	url = https://github.com/hinst/go-api-file-picker.git
