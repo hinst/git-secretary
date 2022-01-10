@@ -1,12 +1,13 @@
 package git_client
 
 import (
-	"github.com/hinst/git-stories-api"
-	"github.com/hinst/go-common"
 	"os/exec"
 	"strconv"
 	"strings"
 	"time"
+
+	git_stories_api "github.com/hinst/git-stories-api"
+	"github.com/hinst/go-common"
 )
 
 type GitClient struct {
@@ -27,7 +28,7 @@ func (this *GitClient) Run(args []string) (string, error) {
 		return outputText, e
 	} else {
 		var errorMessage = "Error running git " + strings.Join(args, " ") + "\n" + outputText
-		return "", common.WrapError(errorMessage, e)
+		return "", common.CreateException(errorMessage, e)
 	}
 }
 
@@ -64,7 +65,7 @@ func (this *GitClient) ReadCommitDate(commitHash string) (time.Time, error) {
 	}
 	var second, numberError = strconv.ParseInt(strings.TrimSpace(outputText), 10, 64)
 	if numberError != nil {
-		return time.Unix(0, 0), common.WrapError("ReadCommitDate", numberError)
+		return time.Unix(0, 0), common.CreateException("ReadCommitDate", numberError)
 	}
 	return time.Unix(second, 0), nil
 }

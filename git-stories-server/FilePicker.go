@@ -1,4 +1,4 @@
-package go_api_file_picker
+package main
 
 import (
 	"encoding/json"
@@ -25,5 +25,6 @@ func (picker *FilePicker) GetFileList(responseWriter http.ResponseWriter, reques
 		return nil
 	})
 	var data, error = json.Marshal(fileInfos)
-	common.AssertError()
+	common.AssertWrapped(error, "error: write JSON")
+	responseWriter.Write(data)
 }
