@@ -1,0 +1,1 @@
+build-backend.bat && dist\git-stories-server
