@@ -2,10 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"io/fs"
 	"net/http"
+	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -17,8 +16,9 @@ type FilePicker struct {
 }
 
 type FileInfo struct {
-	name        string
-	isDirectory bool
+	Name        string `json:"name"`
+	Path        string `json:"path"`
+	IsDirectory bool   `json:"isDirectory"`
 }
 
 func (picker *FilePicker) Initialize(wrapper func(pattern string, handler http.HandlerFunc)) {
@@ -32,19 +32,28 @@ func (picker *FilePicker) GetFileList(responseWriter http.ResponseWriter, reques
 		if runtime.GOOS == "windows" {
 			var driveList = picker.getDriveList()
 			for _, driveLetter := range driveList {
-				fileInfos = append(fileInfos, FileInfo{name: driveLetter + "\\", isDirectory: true})
+				fileInfos = append(fileInfos, FileInfo{
+					Path: driveLetter, Name: driveLetter, IsDirectory: true,
+				})
 			}
 		} else {
 			directory = "/"
 		}
 	}
 	if len(directory) > 0 {
-		filepath.Walk(directory, func(path string, info fs.FileInfo, err error) error {
-			if info != nil {
-				fileInfos = append(fileInfos, FileInfo{name: path, isDirectory: info.IsDir()})
-			}
-			return nil
-		})
+		var files, fileError = os.ReadDir(picker.getDirectory(directory))
+		if fileError != nil {
+			responseWriter.WriteHeader(http.StatusInternalServerError)
+			responseWriter.Write([]byte("Unable to read directory \"" + directory + "\""))
+			return
+		}
+		for _, fileInfo := range files {
+			fileInfos = append(fileInfos, FileInfo{
+				Path:        directory + string(os.PathSeparator) + fileInfo.Name(),
+				Name:        fileInfo.Name(),
+				IsDirectory: fileInfo.IsDir(),
+			})
+		}
 	}
 	var data, error = json.Marshal(fileInfos)
 	common.AssertWrapped(error, "error: write JSON")
@@ -66,4 +75,14 @@ func (picker *FilePicker) getDriveList() (drives []string) {
 		}
 	}
 	return
+}
+
+func (picker *FilePicker) getDirectory(directory string) string {
+	// Workaround for directory behavior on Windows
+	var isDriveLetter = len(directory) == 2 && directory[1] == ':'
+	if isDriveLetter {
+		return directory + string(os.PathSeparator)
+	} else {
+		return directory
+	}
 }
