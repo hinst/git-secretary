@@ -34,6 +34,9 @@ func (me *WebApp) Start() {
 	me.handle(webApiPath+"/commits", me.commits)
 	me.handle(webApiPath+"/fullLog", me.getFullLog)
 	me.handle(webApiPath+"/stories", me.getStories)
+
+	var filePicker = FilePicker{WebPath: webApiPath}
+	filePicker.Initialize(me.handle)
 }
 
 func (me *WebApp) loadConfiguration() {
