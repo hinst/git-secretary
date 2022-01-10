@@ -85,7 +85,11 @@ func (me *WebApp) getStories(responseWriter http.ResponseWriter, request *http.R
 		lengthLimit = extractedLengthLimit
 	}
 	var log, gitError = git_client.CreateGitClient(directory).ReadDetailedLog(lengthLimit)
-	common.AssertError(gitError)
+	if gitError != nil {
+		responseWriter.WriteHeader(http.StatusInternalServerError)
+		responseWriter.Write([]byte("Unable to open repository at path \"" + directory + "\""))
+		return
+	}
 	var logBytes, jsonWriteError = json.Marshal(log)
 	common.AssertError(jsonWriteError)
 	var workingDirectory, getwdError = os.Getwd()
