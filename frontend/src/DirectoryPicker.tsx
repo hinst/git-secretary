@@ -1,7 +1,11 @@
-import { Component } from 'react';
+import lodash from 'lodash';
+import { Component, CSSProperties } from 'react';
 import ArticleIcon from '@mui/icons-material/Article';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Common } from './Common';
+import { LinearProgress } from '@material-ui/core';
+import { splitAll } from './string';
 
 class Props {
 }
@@ -13,9 +17,13 @@ interface FileInfo {
 }
 
 class State {
-    currentDirectory: string = 'C:';
+    isLoading: boolean = false;
+    directory: string = '';
     files: FileInfo[] = [];
 }
+
+const fileIconStyle: CSSProperties = { verticalAlign: 'middle', marginRight: 4 };
+const fileItemStyle: CSSProperties = { paddingTop: 2, paddingBottom: 2, paddingLeft: 4 };
 
 export class DirectoryPicker extends Component<Props, State> {
     constructor(props: Props) {
@@ -32,27 +40,64 @@ export class DirectoryPicker extends Component<Props, State> {
             <div className="w3-bar w3-border-bottom" style={{position: 'sticky', top: 0}}>
                 <div className="w3-bar-item">Please pick directory containing a Git repository</div>
             </div>
-            <div className="w3-container"> {this.renderFiles()} </div>
+            <LinearProgress style={{visibility: this.state.isLoading ? 'visible' : 'hidden' }} />
+            <div className="w3-container">
+                { this.state.directory.length ? this.renderParentDirectory() : undefined }
+                {this.renderFiles()}
+            </div>
         </div>
     }
 
     private async loadFileList() {
+        this.setState({isLoading: true});
         const url = Common.apiUrl + '/fileList?directory=' +
-            encodeURIComponent(this.state.currentDirectory);
+            encodeURIComponent(this.state.directory);
         const response = await fetch(url);
-        const files = await response.json();
-        this.setState({files: files});
+        if (response.ok) {
+            const files = await response.json();
+            this.setState({files: files, isLoading: false});
+        } else {
+            this.setState({files: [], isLoading: false})
+            alert(response.statusText);
+        }
     }
 
     private renderFiles() {
-        return this.state.files.map(this.renderFile.bind(this));
+        const files = lodash.sortBy(this.state.files,
+            file => file.isDirectory ? 0 : 1,
+            file => file.name);
+        return files.map(file => this.renderFile(file));
     }
 
     private renderFile(file: FileInfo) {
-        const iconStyle = {verticalAlign: 'middle', marginRight: 4};
         const icon = file.isDirectory
-            ? <FolderOpenIcon style={iconStyle}/>
-            : <ArticleIcon style={iconStyle}/>;
-        return <div style={{marginTop: 4}}> {icon} {file.name} </div>
+            ? <FolderOpenIcon style={fileIconStyle}/>
+            : <ArticleIcon style={fileIconStyle}/>;
+        const className = file.isDirectory ? 'GitStories_FilePicker_ClickableItem' : undefined;
+        return <div onClick={() => this.clickFile(file)} className={className} style={fileItemStyle}>
+            {icon} {file.name}
+        </div>;
+    }
+
+    private renderParentDirectory() {
+        return <div
+            onClick={() => this.goToParent()}
+            className="GitStories_FilePicker_ClickableItem"
+            style={fileItemStyle}
+        >
+            <ArrowBackIcon style={fileIconStyle}/> <i>go to parent directory</i>
+        </div>
+    }
+
+    private goToParent() {
+        const parts = splitAll(this.state.directory, ['/', '\\']);
+        parts.pop();
+        this.setState({ directory: parts.join('/') });
+        setTimeout(() => this.loadFileList());
+    }
+
+    private clickFile(file: FileInfo) {
+        this.setState({directory: file.path});
+        setTimeout(() => this.loadFileList());
     }
 }
