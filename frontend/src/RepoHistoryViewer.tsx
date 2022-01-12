@@ -31,21 +31,19 @@ export class RepoHistoryViewer extends Component<Props, State> {
 
     override render() {
         return <div>
-            <div style={{padding: '0px'}}>
-                <div className="w3-bar">
-                    <Link to={Common.baseUrl + '/open-repository'} className="w3-bar-item w3-btn w3-black">
-                        <FolderOpenIcon/>
-                    </Link>
-                    <div className="w3-bar-item" style={{fontSize: '17px'}}>
-                        {this.repositoryName}
-                    </div>
+            <div className="w3-bar">
+                <Link to={Common.baseUrl + '/open-repository'} className="w3-bar-item w3-btn w3-black">
+                    <FolderOpenIcon/>
+                </Link>
+                <div className="w3-bar-item" style={{fontSize: 17}}>
+                    {this.repositoryName}
                 </div>
-                <div>
-                    {this.state.stories != null
-                        ? this.renderStories()
-                        : null
-                    }
-                </div>
+            </div>
+            <div>
+                {this.state.stories != null
+                    ? this.renderStories()
+                    : null
+                }
             </div>
         </div>;
     }
