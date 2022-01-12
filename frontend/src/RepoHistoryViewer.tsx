@@ -5,6 +5,10 @@ import { StoryEntry } from './StoryEntry';
 import lodash from 'lodash';
 import { getStartOfDay } from './dateTime';
 import { LinearProgress } from '@material-ui/core';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import { replaceAll } from './string';
+import { Margin } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 
 class Props {
 }
@@ -26,23 +30,23 @@ export class RepoHistoryViewer extends Component<Props, State> {
     }
 
     render() {
-        return <div className="w3-panel">
-            <input type="text" className="w3-input"
-                value={this.state.repoDirectory}
-                onChange={this.receiveFilePathChange.bind(this)}
-            />
-            { !this.state.isLoading
-                ? <button className="w3-btn w3-black" onClick={this.receiveLoadClick.bind(this)}>
-                    LOAD
-                </button>
-                : <div style={{ marginTop: '4px' }}>
-                    <LinearProgress/>
+        return <div>
+            <div style={{padding: '0px'}}>
+                <div className="w3-bar">
+                    <Link to={Common.baseUrl + '/open-repository'} className="w3-bar-item w3-btn w3-black">
+                        <FolderOpenIcon/>
+                    </Link>
+                    <div className="w3-bar-item" style={{fontSize: '17px'}}>
+                        {this.repositoryName}
+                    </div>
                 </div>
-            }
-            {this.state.stories != null
-                ? this.renderStories()
-                : null
-            }
+                <div>
+                    {this.state.stories != null
+                        ? this.renderStories()
+                        : null
+                    }
+                </div>
+            </div>
         </div>;
     }
 
@@ -99,5 +103,12 @@ export class RepoHistoryViewer extends Component<Props, State> {
                 { entries.map(entry => this.renderStoryEntry(entry)) }
             </ul>
         </div>;
+    }
+
+    private get repositoryName(): string {
+        const path = replaceAll('\\', '/', this.state.repoDirectory || '');
+        const parts = path.split('/');
+        const lastPart = parts.length ? parts[parts.length - 1] : '';
+        return lastPart;
     }
 }
