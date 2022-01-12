@@ -7,12 +7,12 @@ import { Common } from './Common';
 
 function App() {
   document.title = 'Git Stories';
-  return (<BrowserRouter>
+  return <BrowserRouter>
     <Routes>
       <Route path={Common.baseUrl + '/open-repository'} />
       <Route path={Common.baseUrl} element={<RepoHistoryViewer/>} />
     </Routes>
-  </BrowserRouter>);
+  </BrowserRouter>;
 }
 
 export default App;
