@@ -29,7 +29,7 @@ export class RepoHistoryViewer extends Component<Props, State> {
         this.state = state;
     }
 
-    render() {
+    override render() {
         return <div>
             <div style={{padding: '0px'}}>
                 <div className="w3-bar">
