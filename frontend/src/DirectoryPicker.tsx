@@ -5,9 +5,11 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Common } from './Common';
 import { LinearProgress } from '@material-ui/core';
-import { splitAll } from './string';
+import { replaceAll, splitAll } from './string';
+import { sleep } from './sleep';
 
 class Props {
+    setDirectory: (directory: string) => void = () => {};
 }
 
 interface FileInfo {
@@ -37,11 +39,24 @@ export class DirectoryPicker extends Component<Props, State> {
 
     override render() {
         return <div>
-            <div className="w3-bar w3-border-bottom" style={{position: 'sticky', top: 0}}>
-                <div className="w3-bar-item">Please pick directory containing a Git repository</div>
+            <div className="w3-bar w3-dark-grey" style={{position: 'sticky', top: 0}}>
+                { this.state.directory === ''
+                    ? <div className="w3-bar-item">Please pick your Git repository</div>
+                    : [
+                        <button
+                            className="w3-bar-item w3-btn w3-black"
+                            onClick={() => this.clickOk()}
+                        >
+                            OK
+                        </button>,
+                        <div className="w3-bar-item">
+                            { replaceAll('\\', '/', this.state.directory) }
+                        </div>
+                    ]
+                }
             </div>
             <LinearProgress style={{visibility: this.state.isLoading ? 'visible' : 'hidden' }} />
-            <div className="w3-container">
+            <div>
                 { this.state.directory.length ? this.renderParentDirectory() : undefined }
                 {this.renderFiles()}
             </div>
@@ -58,7 +73,7 @@ export class DirectoryPicker extends Component<Props, State> {
             this.setState({files: files, isLoading: false});
         } else {
             this.setState({files: [], isLoading: false})
-            alert(response.statusText);
+            alert(response.statusText + '\n' + await response.text());
         }
     }
 
@@ -74,7 +89,8 @@ export class DirectoryPicker extends Component<Props, State> {
             ? <FolderOpenIcon style={fileIconStyle}/>
             : <ArticleIcon style={fileIconStyle}/>;
         const className = file.isDirectory ? 'GitStories_FilePicker_ClickableItem' : undefined;
-        return <div onClick={() => this.clickFile(file)} className={className} style={fileItemStyle}>
+        const onClick = file.isDirectory ? () => this.clickFile(file) : () => {};
+        return <div onClick={onClick} className={className} style={fileItemStyle}>
             {icon} {file.name}
         </div>;
     }
@@ -96,8 +112,14 @@ export class DirectoryPicker extends Component<Props, State> {
         setTimeout(() => this.loadFileList());
     }
 
-    private clickFile(file: FileInfo) {
+    private async clickFile(file: FileInfo) {
         this.setState({directory: file.path});
-        setTimeout(() => this.loadFileList());
+        await sleep();
+        await this.loadFileList();
+        window.scrollTo(0, 0);
+    }
+
+    private clickOk() {
+        this.props.setDirectory(this.state.directory);
     }
 }
