@@ -44,12 +44,13 @@ export class DirectoryPicker extends Component<Props, State> {
                     ? <div className="w3-bar-item">Please pick your Git repository</div>
                     : [
                         <button
+                            key="OkButton"
                             className="w3-bar-item w3-btn w3-black"
                             onClick={() => this.clickOk()}
                         >
                             OK
                         </button>,
-                        <div className="w3-bar-item">
+                        <div key="DirectoryString" className="w3-bar-item">
                             { replaceAll('\\', '/', this.state.directory) }
                         </div>
                     ]
@@ -90,7 +91,12 @@ export class DirectoryPicker extends Component<Props, State> {
             : <ArticleIcon style={fileIconStyle}/>;
         const className = file.isDirectory ? 'GitStories_FilePicker_ClickableItem' : undefined;
         const onClick = file.isDirectory ? () => this.clickFile(file) : () => {};
-        return <div onClick={onClick} className={className} style={fileItemStyle}>
+        return <div
+            key={file.path}
+            onClick={onClick}
+            className={className}
+            style={fileItemStyle}
+        >
             {icon} {file.name}
         </div>;
     }
