@@ -1,20 +1,18 @@
-import React, { ChangeEvent, Component } from 'react';
+import React, { Component } from 'react';
 import { Common } from './Common';
-import { localStorageAppPrefix } from './localStorage';
 import { StoryEntry } from './StoryEntry';
 import lodash from 'lodash';
 import { getStartOfDay } from './dateTime';
-import { LinearProgress } from '@material-ui/core';
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { replaceAll } from './string';
-import { Margin } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 
 class Props {
+    directory?: string;
 }
 
 class State {
-    repoDirectory?: string;
     stories: StoryEntry[] = [];
     isLoading: boolean = false;
 }
@@ -23,9 +21,6 @@ export class RepoHistoryViewer extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
         const state = new State();
-        state.repoDirectory = localStorage.getItem(localStorageAppPrefix + '.repoDirectory') || undefined;
-        if (null == state.repoDirectory)
-            state.repoDirectory = '';
         this.state = state;
     }
 
@@ -38,6 +33,12 @@ export class RepoHistoryViewer extends Component<Props, State> {
                 <div className="w3-bar-item" style={{fontSize: 17}}>
                     {this.repositoryName}
                 </div>
+                { this.state.isLoading
+                    ? <div className="w3-bar-item">
+                        <HourglassEmptyIcon className="rotating"/>
+                    </div>
+                    : undefined
+                }
             </div>
             <div>
                 {this.state.stories != null
@@ -48,21 +49,11 @@ export class RepoHistoryViewer extends Component<Props, State> {
         </div>;
     }
 
-    componentDidUpdate() {
-        if (this.state.repoDirectory)
-            localStorage.setItem(localStorageAppPrefix + '.repoDirectory', this.state.repoDirectory);
-    }
-
-    private receiveFilePathChange(event: ChangeEvent<HTMLInputElement>) {
-        const repoDirectory = event.target['value'];
-        this.setState({repoDirectory: repoDirectory});
-    }
-
     private async receiveLoadClick() {
         this.setState({isLoading: true});
         try {
             const url = Common.apiUrl + '/stories?' +
-                'directory=' + encodeURIComponent(this.state.repoDirectory || '') + '&' +
+                'directory=' + encodeURIComponent(this.props.directory || '') + '&' +
                 'lengthLimit=20';
             const response = await fetch(url);
             const stories: StoryEntry[] = await response.json();
@@ -104,7 +95,7 @@ export class RepoHistoryViewer extends Component<Props, State> {
     }
 
     private get repositoryName(): string {
-        const path = replaceAll('\\', '/', this.state.repoDirectory || '');
+        const path = replaceAll('\\', '/', this.props.directory || '');
         const parts = path.split('/');
         const lastPart = parts.length ? parts[parts.length - 1] : '';
         return lastPart;

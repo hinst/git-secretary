@@ -16,3 +16,13 @@ input {
     background-color: #6c71c4;
     cursor: pointer;
 }
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.rotating {
+    animation: spin 2s linear infinite;
+}
