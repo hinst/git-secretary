@@ -12,7 +12,7 @@ class Props {
 
 class State {
     directory?: string;
-    goToHome: boolean = false;
+    goTo?: string;
 }
 
 export class App extends Component<Props, State> {
@@ -20,19 +20,21 @@ export class App extends Component<Props, State> {
         super(props);
         const state = new State();
         state.directory = localStorage.getItem(localStorageAppPrefix + '.directory') || undefined;
+        if (!state.directory)
+            state.goTo = Common.baseUrl + '/open-repository';
         this.state = state;
         document.title = 'Git Stories';
     }
 
     override render() {
-        if (this.state.goToHome)
-            setTimeout(() => this.setState({ goToHome: false }));
+        if (this.state.goTo)
+            setTimeout(() => this.setState({ goTo: undefined }));
         return <div style={{margin: 4}}>
             <BrowserRouter>
                 <div className="w3-bar w3-dark-grey" style={{marginBottom: 4, position: 'sticky', top: 0}}>
                     <a href={Common.baseUrl + '/'} className="w3-bar-item w3-black w3-btn">GIT-STORIES</a>
                 </div>
-                { this.state.goToHome ? <Navigate to={Common.baseUrl + '/'} /> : undefined }
+                { this.state.goTo ? <Navigate to={this.state.goTo} /> : undefined }
                 <Routes>
                     <Route path={Common.baseUrl + '/open-repository'} element={this.renderDirectoryPicker()} />
                     <Route path={Common.baseUrl} element={this.renderRepoHistoryViewer()} />
@@ -48,7 +50,7 @@ export class App extends Component<Props, State> {
     }
 
     private setDirectory(directory: string) {
-        this.setState({ directory, goToHome: true });
+        this.setState({ directory, goTo: Common.baseUrl + '/' });
         localStorage.setItem(localStorageAppPrefix + '.directory', directory);
     }
 
