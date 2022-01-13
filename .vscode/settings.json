@@ -1,0 +1,8 @@
+{
+    "files.exclude": {
+        "frontend": true,
+        "git-stories-api": true,
+        "git-stories-server": true,
+        "story-girls-standard": true
+    }
+}
