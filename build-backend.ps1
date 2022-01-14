@@ -18,4 +18,6 @@ if (-Not $built) {
     exit $built
 }
 
+Copy-Item .\configuration.json .\dist\
+
 Write-Output "Backend build succeeded"
