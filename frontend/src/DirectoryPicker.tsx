@@ -126,6 +126,11 @@ export class DirectoryPicker extends Component<Props, State> {
     }
 
     private clickOk() {
-        this.props.setDirectory(this.state.directory);
+        const isGitDirectory = this.state.files.some(file =>
+            file.name.toLowerCase() === '.git' && file.isDirectory);
+        if (isGitDirectory)
+            this.props.setDirectory(this.state.directory);
+        else
+            alert('This folder does not look like a Git repository because it does not contain .git');
     }
 }
