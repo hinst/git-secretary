@@ -1,6 +1,3 @@
 [submodule "git-stories-api"]
 	path = git-stories-api
 	url = https://github.com/hinst/git-stories-api.git
-[submodule "go-common"]
-	path = go-common
-	url = https://github.com/hinst/go-common.git
