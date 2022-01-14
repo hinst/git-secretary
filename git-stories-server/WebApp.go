@@ -10,8 +10,10 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"time"
 
 	"github.com/hinst/go-common"
+	"github.com/pkg/browser"
 )
 
 type WebApp struct {
@@ -27,7 +29,7 @@ func (me *WebApp) Init() {
 
 func (me *WebApp) Start() {
 	me.loadConfiguration()
-	var fileServer = http.FileServer(http.Dir("./frontend/build"))
+	var fileServer = http.FileServer(http.Dir("./frontend"))
 	var webFilePath = me.webPath + "/static-files"
 	http.Handle(webFilePath+"/", http.StripPrefix(webFilePath+"/", fileServer))
 	var webApiPath = me.webPath + "/api"
@@ -46,7 +48,14 @@ func (me *WebApp) startListening() {
 	if me.configuration.PortNumber == 0 {
 		log.Fatal("Error: Please provide PortNumber in configuration.json")
 	}
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(me.configuration.PortNumber), nil))
+	var portString = strconv.Itoa(me.configuration.PortNumber)
+	var url = "http://localhost:" + portString
+	log.Println("Will listen at " + url)
+	go func() {
+		time.Sleep(1 * time.Second)
+		browser.OpenURL(url)
+	}()
+	log.Fatal(http.ListenAndServe(":"+portString, nil))
 }
 
 func (me *WebApp) loadConfiguration() {

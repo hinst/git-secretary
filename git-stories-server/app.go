@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -12,7 +13,7 @@ func main() {
 	var workingDirectory = flag.String("wd", "", "Working directory")
 	flag.Parse()
 	if workingDirectory != nil && len(*workingDirectory) > 0 {
-		fmt.Println("Go to " + *workingDirectory)
+		log.Println("Go to " + *workingDirectory)
 		os.Chdir(*workingDirectory)
 	}
 
