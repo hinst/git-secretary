@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"runtime"
 	"strings"
 
 	"github.com/hinst/go-common"
@@ -29,7 +28,7 @@ func (picker *FilePicker) GetFileList(responseWriter http.ResponseWriter, reques
 	var fileInfos []FileInfo
 	var directory = request.URL.Query().Get("directory")
 	if len(directory) == 0 {
-		if runtime.GOOS == "windows" {
+		if CheckWindows() {
 			var driveList = picker.getDriveList()
 			for _, driveLetter := range driveList {
 				fileInfos = append(fileInfos, FileInfo{
