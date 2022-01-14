@@ -20,8 +20,8 @@ class App extends Component<Props, State> {
         super(props);
         const state = new State();
         state.directory = localStorage.getItem(localStorageAppPrefix + '.directory') || undefined;
-        if (!state.directory)
-            state.goTo = Common.baseUrl + '/open-repository';
+        if (!window.location.hash?.length)
+            state.goTo = '/';
         this.state = state;
         document.title = 'Git Stories';
     }
@@ -41,10 +41,8 @@ class App extends Component<Props, State> {
                 </div>
                 { this.state.goTo ? <Navigate to={this.state.goTo} /> : undefined }
                 <Routes>
-                    <Route path={Common.baseUrl + '/open-repository'}
-                        element={this.renderDirectoryPicker()} />
-                    <Route path={Common.baseUrl}
-                        element={this.renderRepoHistoryViewer()} />
+                    <Route path="/open-repository" element={this.renderDirectoryPicker()} />
+                    <Route path="/" element={this.renderRepoHistoryViewer()} />
                 </Routes>
             </HashRouter>
         </div>;
@@ -57,7 +55,7 @@ class App extends Component<Props, State> {
     }
 
     private setDirectory(directory: string) {
-        this.setState({ directory, goTo: Common.baseUrl + '/' });
+        this.setState({ directory, goTo: '/' });
         localStorage.setItem(localStorageAppPrefix + '.directory', directory);
     }
 

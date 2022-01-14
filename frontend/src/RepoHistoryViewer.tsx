@@ -6,7 +6,7 @@ import { getStartOfDay } from './dateTime';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { replaceAll } from './string';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 
 class Props {
     directory?: string;
@@ -15,20 +15,26 @@ class Props {
 class State {
     stories: StoryEntry[] = [];
     isLoading: boolean = false;
+    goTo?: string;
 }
 
 export class RepoHistoryViewer extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
         const state = new State();
+        if (!props.directory)
+            state.goTo = '/open-repository';
         this.state = state;
     }
 
     override render() {
+        if (this.state.goTo)
+            setTimeout(() => this.setState({ goTo: undefined }));
         return <div>
+            { this.state.goTo ? <Navigate to={this.state.goTo} /> : undefined }
             <div className="w3-bar w3-dark-grey" style={{marginBottom: 4, position: 'sticky', top: 0}}>
                 <Link
-                    to={Common.baseUrl + '/open-repository'}
+                    to={'/open-repository'}
                     title="Open Git repository"
                     className="w3-bar-item w3-btn w3-black"
                 >
