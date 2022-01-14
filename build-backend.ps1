@@ -17,10 +17,24 @@ if (-Not $built) {
 }
 
 cd story-girls-standard
+$env:GOOS=""
 go-bindata resources
 $built=$?
 if ($built) {
-    go build -o ../dist/plugins/story-girls-standard.exe
+    go build -o ../dist/plugins/
+    $built=$?
+}
+cd ..
+if (-Not $built) {
+    exit $built
+}
+
+cd story-girls-standard
+$env:GOOS="linux"
+go-bindata resources
+$built=$?
+if ($built) {
+    go build -o ../dist/plugins/
     $built=$?
 }
 cd ..
