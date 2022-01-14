@@ -27,10 +27,14 @@ func (me *WebApp) Init() {
 	}
 }
 
+func (me *WebApp) GetWebFilePath() string {
+	return me.webPath + "/static-files"
+}
+
 func (me *WebApp) Start() {
 	me.loadConfiguration()
 	var fileServer = http.FileServer(http.Dir("./frontend"))
-	var webFilePath = me.webPath + "/static-files"
+	var webFilePath = me.GetWebFilePath()
 	http.Handle(webFilePath+"/", http.StripPrefix(webFilePath+"/", fileServer))
 	var webApiPath = me.webPath + "/api"
 	me.handle(webApiPath+"/repoHistory", me.getRepoHistory)
@@ -49,7 +53,7 @@ func (me *WebApp) startListening() {
 		log.Fatal("Error: Please provide PortNumber in configuration.json")
 	}
 	var portString = strconv.Itoa(me.configuration.PortNumber)
-	var url = "http://localhost:" + portString
+	var url = "http://localhost:" + portString + me.GetWebFilePath()
 	log.Println("Will listen at " + url)
 	go func() {
 		time.Sleep(1 * time.Second)
