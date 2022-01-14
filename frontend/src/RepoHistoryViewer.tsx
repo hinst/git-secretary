@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { Common } from './Common';
 import { StoryEntry } from './StoryEntry';
 import lodash from 'lodash';
 import { getStartOfDay } from './dateTime';
-import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { replaceAll } from './string';
 import { Link } from 'react-router-dom';
 
@@ -26,19 +26,24 @@ export class RepoHistoryViewer extends Component<Props, State> {
 
     override render() {
         return <div>
-            <div className="w3-bar">
-                <Link to={Common.baseUrl + '/open-repository'} className="w3-bar-item w3-btn w3-black">
+            <div className="w3-bar w3-dark-grey" style={{marginBottom: 4, position: 'sticky', top: 0}}>
+                <Link
+                    to={Common.baseUrl + '/open-repository'}
+                    title="Open Git repository"
+                    className="w3-bar-item w3-btn w3-black"
+                >
                     <FolderOpenIcon/>
                 </Link>
-                <div className="w3-bar-item" style={{fontSize: 17}}>
+                <button
+                    onClick={() => this.receiveLoadClick()}
+                    className="w3-btn w3-black w3-bar-item"
+                    style={{marginLeft: 4}}
+                >
+                    <RefreshIcon className={ this.state.isLoading ? "rotating" : undefined }/>
+                </button>
+                <div className="w3-bar-item" style={{fontSize: 16}}>
                     {this.repositoryName}
                 </div>
-                { this.state.isLoading
-                    ? <div className="w3-bar-item">
-                        <HourglassEmptyIcon className="rotating"/>
-                    </div>
-                    : undefined
-                }
             </div>
             <div>
                 {this.state.stories != null
@@ -47,6 +52,10 @@ export class RepoHistoryViewer extends Component<Props, State> {
                 }
             </div>
         </div>;
+    }
+
+    override componentDidMount() {
+        this.receiveLoadClick();
     }
 
     private async receiveLoadClick() {
