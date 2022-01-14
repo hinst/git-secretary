@@ -10,6 +10,6 @@ if (-Not $built) {
     exit $built
 }
 
-Compress-Archive -Path .\dist\* -DestinationPath .\git-stories.zip
+Compress-Archive -Path .\dist\* -DestinationPath .\git-stories.zip -Force
 
 Write-Output "Build all succeeded"
