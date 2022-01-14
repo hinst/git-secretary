@@ -1,4 +1,14 @@
 cd git-stories-server
+$env:GOOS=""
+go build -o ../dist/
+$built=$?
+cd ..
+if (-Not $built) {
+    exit $built
+}
+
+cd git-stories-server
+$env:GOOS="linux"
 go build -o ../dist/
 $built=$?
 cd ..
