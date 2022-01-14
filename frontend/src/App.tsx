@@ -1,7 +1,7 @@
 import './App.css';
 import './external/w3.css';
 import { RepoHistoryViewer } from './RepoHistoryViewer';
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate, HashRouter } from 'react-router-dom';
 import { Common } from './Common';
 import { DirectoryPicker } from './DirectoryPicker';
 import { Component } from 'react';
@@ -15,7 +15,7 @@ class State {
     goTo?: string;
 }
 
-export class App extends Component<Props, State> {
+class App extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
         const state = new State();
@@ -30,7 +30,7 @@ export class App extends Component<Props, State> {
         if (this.state.goTo)
             setTimeout(() => this.setState({ goTo: undefined }));
         return <div style={{margin: 4}}>
-            <BrowserRouter>
+            <HashRouter>
                 <div
                     className="w3-bar w3-dark-grey"
                     style={{marginBottom: 4, position: 'sticky', top: 0}}
@@ -46,7 +46,7 @@ export class App extends Component<Props, State> {
                     <Route path={Common.baseUrl}
                         element={this.renderRepoHistoryViewer()} />
                 </Routes>
-            </BrowserRouter>
+            </HashRouter>
         </div>;
     }
 
