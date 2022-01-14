@@ -1,5 +1,6 @@
 package main
 
 type Configuration struct {
-	Plugin string
+	Plugin     string
+	PortNumber int
 }

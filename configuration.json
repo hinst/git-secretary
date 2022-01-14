@@ -1,3 +1,4 @@
 {
-    "Plugin": "plugins/story-girls-standard"
+    "Plugin": "plugins/story-girls-standard",
+    "PortNumber": 3003
 }

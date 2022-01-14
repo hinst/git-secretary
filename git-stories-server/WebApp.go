@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"git-stories-server/git_client"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -37,6 +38,15 @@ func (me *WebApp) Start() {
 
 	var filePicker = FilePicker{WebPath: webApiPath}
 	filePicker.Initialize(me.handle)
+
+	me.startListening()
+}
+
+func (me *WebApp) startListening() {
+	if me.configuration.PortNumber == 0 {
+		log.Fatal("Error: Please provide PortNumber in configuration.json")
+	}
+	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(me.configuration.PortNumber), nil))
 }
 
 func (me *WebApp) loadConfiguration() {
