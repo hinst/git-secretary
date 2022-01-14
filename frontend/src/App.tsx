@@ -20,8 +20,6 @@ class App extends Component<Props, State> {
         super(props);
         const state = new State();
         state.directory = localStorage.getItem(localStorageAppPrefix + '.directory') || undefined;
-        if (!window.location.hash?.length)
-            state.goTo = '/';
         this.state = state;
         document.title = 'Git Stories';
     }
