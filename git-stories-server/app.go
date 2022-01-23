@@ -14,7 +14,10 @@ func main() {
 	flag.Parse()
 	if workingDirectory != nil && len(*workingDirectory) > 0 {
 		log.Println("Go to " + *workingDirectory)
-		os.Chdir(*workingDirectory)
+		var e = os.Chdir(*workingDirectory)
+		if e != nil {
+			panic("Unable to change current directory to " + *workingDirectory)
+		}
 	}
 
 	var webApp WebApp
