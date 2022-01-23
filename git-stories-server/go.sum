@@ -1,5 +1,9 @@
 github.com/hinst/git-stories-api v0.1.2-0.20201204154042-0bf0d37465f0 h1:MVdw4fo/ow6eOYR6whV3aN4psQKe805B/7hHUra8LVo=
 github.com/hinst/git-stories-api v0.1.2-0.20201204154042-0bf0d37465f0/go.mod h1:vkA/l2Ljsy2hCAFQutI2OLI10pihY6fum5NSXDPmPC0=
+github.com/hinst/git-stories-api v0.1.2 h1:SoosmjYB2BtB1JnRbhh/sbKNGSuwDFf+5zSvrL/1MK4=
+github.com/hinst/git-stories-api v0.1.2/go.mod h1:vkA/l2Ljsy2hCAFQutI2OLI10pihY6fum5NSXDPmPC0=
+github.com/hinst/git-stories-api v0.1.3 h1:Yq+fo3JlKuPN225UuWv7P+mEOcGiTK2rKR5juQjynFY=
+github.com/hinst/git-stories-api v0.1.3/go.mod h1:vkA/l2Ljsy2hCAFQutI2OLI10pihY6fum5NSXDPmPC0=
 github.com/hinst/go-common v0.0.0-20220110203238-3492ed09d097 h1:MFLxN6ARr9fMpnlsuW54yeQMlD3qmgYnDlOYDTQUcoQ=
 github.com/hinst/go-common v0.0.0-20220110203238-3492ed09d097/go.mod h1:JjW/dKdYWVguG2Pl3X4lHn2p6FL8/OW73Ng87yM9r4g=
 github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 h1:KoWmjvw+nsYOo29YJK9vDA65RGE3NrOnUtO7a+RF9HU=

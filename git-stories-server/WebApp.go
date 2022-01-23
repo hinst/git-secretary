@@ -120,7 +120,7 @@ func (me *WebApp) getStories(responseWriter http.ResponseWriter, request *http.R
 	common.AssertError(jsonWriteError)
 	var workingDirectory, getwdError = os.Getwd()
 	common.AssertError(getwdError)
-	var pluginFilePath = workingDirectory + "\\" + me.configuration.Plugin
+	var pluginFilePath = workingDirectory + "/" + me.configuration.Plugin
 	if CheckWindows() {
 		pluginFilePath += ".exe"
 	}
