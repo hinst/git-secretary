@@ -12,13 +12,13 @@ import (
 )
 
 type PluginRunner struct {
-	pluginFilePath string
+	PluginFilePath string
 }
 
 func (runner *PluginRunner) Run(rows git_stories_api.DetailedLogEntryRows) []git_stories_api.StoryEntry {
 	var rowsBytes, jsonWriteError = json.Marshal(rows)
 	common.AssertError(jsonWriteError)
-	var pluginFilePath = runner.pluginFilePath
+	var pluginFilePath = runner.PluginFilePath
 	if CheckWindows() && !strings.HasSuffix(pluginFilePath, WINDOWS_EXECUTABLE_FILE_EXTENSION) {
 		pluginFilePath += WINDOWS_EXECUTABLE_FILE_EXTENSION
 	}

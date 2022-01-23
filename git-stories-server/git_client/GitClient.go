@@ -1,6 +1,7 @@
 package git_client
 
 import (
+	"log"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -11,8 +12,9 @@ import (
 )
 
 type GitClient struct {
-	directory   string
-	commandName string
+	directory       string
+	commandName     string
+	debugLogEnabled bool
 }
 
 func CreateGitClient(directory string) *GitClient {
@@ -20,7 +22,11 @@ func CreateGitClient(directory string) *GitClient {
 }
 
 func (gitClient *GitClient) Run(args []string) (string, error) {
-	var command = exec.Command(gitClient.GetCommandName(), args...)
+	var commandName = gitClient.GetCommandName()
+	if gitClient.debugLogEnabled {
+		log.Println("GitClient.Run: " + commandName + " " + strings.Join(args, " "))
+	}
+	var command = exec.Command(commandName, args...)
 	command.Dir = gitClient.directory
 	var output, e = command.CombinedOutput()
 	var outputText = string(output)
@@ -149,6 +155,11 @@ func (gitClient *GitClient) GetCommandName() string {
 	} else {
 		return "git"
 	}
+}
+
+func (gitClient *GitClient) SetDebugLogEnabled(enabled bool) *GitClient {
+	gitClient.debugLogEnabled = enabled
+	return gitClient
 }
 
 func diffSummaryPartToLong(text string) int {

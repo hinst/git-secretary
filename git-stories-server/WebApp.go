@@ -1,14 +1,13 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"git-stories-server/git_client"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"os"
-	"os/exec"
 	"strconv"
 	"time"
 
@@ -104,40 +103,33 @@ func (me *WebApp) getFullLog(responseWriter http.ResponseWriter, request *http.R
 
 func (me *WebApp) getStories(responseWriter http.ResponseWriter, request *http.Request) {
 	var directory = request.URL.Query()["directory"][0]
-	var lengthLimit = 10
+	if len(directory) == 0 {
+		responseWriter.WriteHeader(http.StatusBadRequest)
+		responseWriter.Write([]byte("Query argument \"directory\" is required"))
+		return
+	}
+	var lengthLimit = math.MaxInt32
 	if len(request.URL.Query()["lengthLimit"]) > 0 {
 		var extractedLengthLimit, e = strconv.Atoi(request.URL.Query()["lengthLimit"][0])
 		common.AssertError(e)
 		lengthLimit = extractedLengthLimit
 	}
-	var log, gitError = git_client.CreateGitClient(directory).ReadDetailedLog(lengthLimit)
+	var rows, gitError = git_client.CreateGitClient(directory).
+		SetDebugLogEnabled(true).
+		ReadDetailedLog(lengthLimit)
 	if gitError != nil {
 		responseWriter.WriteHeader(http.StatusInternalServerError)
 		responseWriter.Write([]byte("Unable to open repository at path \"" + directory + "\""))
 		return
 	}
-	var logBytes, jsonWriteError = json.Marshal(log)
-	common.AssertError(jsonWriteError)
 	var workingDirectory, getwdError = os.Getwd()
 	common.AssertError(getwdError)
 	var pluginFilePath = workingDirectory + "/" + me.configuration.Plugin
-	if CheckWindows() {
-		pluginFilePath += ".exe"
-	}
-	var command = exec.Command(pluginFilePath)
-	var writer, writerError = command.StdinPipe()
-	common.AssertError(writerError)
-	var output, pluginOutputError = command.StdoutPipe()
-	common.AssertError(pluginOutputError)
-	common.AssertError(command.Start())
-	var bufferedWriter = bufio.NewWriter(writer)
-	var _, bufferedWriteError = bufferedWriter.Write(logBytes)
-	common.AssertError(bufferedWriteError, bufferedWriter.Flush())
-	var closeError = writer.Close()
-	common.AssertError(closeError)
-	var outputData, outputError = ioutil.ReadAll(bufio.NewReader(output))
-	common.AssertError(outputError)
+	var pluginRunner = PluginRunner{PluginFilePath: pluginFilePath}
+	var storyEntries = pluginRunner.Run(rows)
+	var outputBytes, jsonError = json.Marshal(storyEntries)
+	common.AssertWrapped(jsonError, "Unable to encode json: storyEntries")
 	responseWriter.Header().Add(contentTypeHeaderKey, contentTypeJson)
-	var _, responseWriteError = responseWriter.Write(outputData)
+	var _, responseWriteError = responseWriter.Write(outputBytes)
 	common.Use(responseWriteError)
 }
