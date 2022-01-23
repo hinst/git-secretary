@@ -19,9 +19,9 @@ func CreateGitClient(directory string) *GitClient {
 	return &GitClient{directory: directory}
 }
 
-func (this *GitClient) Run(args []string) (string, error) {
-	var command = exec.Command(this.GetCommandName(), args...)
-	command.Dir = this.directory
+func (gitClient *GitClient) Run(args []string) (string, error) {
+	var command = exec.Command(gitClient.GetCommandName(), args...)
+	command.Dir = gitClient.directory
 	var output, e = command.CombinedOutput()
 	var outputText = string(output)
 	if e == nil {
@@ -32,13 +32,13 @@ func (this *GitClient) Run(args []string) (string, error) {
 	}
 }
 
-func (this *GitClient) ReadLog(lengthLimit int) ([]LogEntryRow, error) {
-	var args = []string{"log",
-		"--format=\"%H %P\"",
-		"-n", strconv.Itoa(lengthLimit),
-		"HEAD",
+func (gitClient *GitClient) ReadLog(lengthLimit int) ([]LogEntryRow, error) {
+	var args = []string{"log", "--format=\"%H %P\""}
+	if lengthLimit > 0 {
+		args = append(args, "-n", strconv.Itoa(lengthLimit))
 	}
-	var outputText, e = this.Run(args)
+	args = append(args, "HEAD")
+	var outputText, e = gitClient.Run(args)
 	if e == nil {
 		var lines = strings.Split(outputText, "\n")
 		var rows []LogEntryRow
@@ -58,8 +58,8 @@ func (this *GitClient) ReadLog(lengthLimit int) ([]LogEntryRow, error) {
 	}
 }
 
-func (this *GitClient) ReadCommitDate(commitHash string) (time.Time, error) {
-	var outputText, runError = this.Run([]string{"show", "--format=%at", "--quiet", commitHash})
+func (gitClient *GitClient) ReadCommitDate(commitHash string) (time.Time, error) {
+	var outputText, runError = gitClient.Run([]string{"show", "--format=%at", "--quiet", commitHash})
 	if runError != nil {
 		return time.Unix(0, 0), runError
 	}
@@ -74,8 +74,8 @@ func checkSpaceOrTab(r rune) bool {
 	return r == ' ' || r == '\t'
 }
 
-func (this *GitClient) ReadDiffSummary(commitHash1, commitHash2 string) ([]git_stories_api.DiffSummaryRow, error) {
-	var outputText, runError = this.Run([]string{"diff", "--numstat", commitHash1, commitHash2})
+func (gitClient *GitClient) ReadDiffSummary(commitHash1, commitHash2 string) ([]git_stories_api.DiffSummaryRow, error) {
+	var outputText, runError = gitClient.Run([]string{"diff", "--numstat", commitHash1, commitHash2})
 	if runError != nil {
 		return nil, runError
 	}
@@ -96,14 +96,14 @@ func (this *GitClient) ReadDiffSummary(commitHash1, commitHash2 string) ([]git_s
 	return rows, nil
 }
 
-func (this *GitClient) ReadDetailedLog(lengthLimit int) ([]git_stories_api.DetailedLogEntryRow, error) {
-	var logEntries, readError = this.ReadLog(lengthLimit)
+func (gitClient *GitClient) ReadDetailedLog(lengthLimit int) ([]git_stories_api.DetailedLogEntryRow, error) {
+	var logEntries, readError = gitClient.ReadLog(lengthLimit)
 	if nil != readError {
 		return nil, readError
 	}
 	var rows []git_stories_api.DetailedLogEntryRow
 	for _, entry := range logEntries {
-		var row, e = this.ReadDetailedLogEntryRow(entry)
+		var row, e = gitClient.ReadDetailedLogEntryRow(entry)
 		if nil != e {
 			return nil, e
 		}
@@ -112,8 +112,8 @@ func (this *GitClient) ReadDetailedLog(lengthLimit int) ([]git_stories_api.Detai
 	return rows, nil
 }
 
-func (this *GitClient) ReadDetailedLogEntryRow(logEntry LogEntryRow) (git_stories_api.DetailedLogEntryRow, error) {
-	var commitDate, commitDateError = this.ReadCommitDate(logEntry.CommitHash)
+func (gitClient *GitClient) ReadDetailedLogEntryRow(logEntry LogEntryRow) (git_stories_api.DetailedLogEntryRow, error) {
+	var commitDate, commitDateError = gitClient.ReadCommitDate(logEntry.CommitHash)
 	if nil != commitDateError {
 		return git_stories_api.DetailedLogEntryRow{}, commitDateError
 	}
@@ -125,7 +125,7 @@ func (this *GitClient) ReadDetailedLogEntryRow(logEntry LogEntryRow) (git_storie
 	}
 	var parentInfos []git_stories_api.ParentInfoEntry
 	for _, parentHash := range parentHashes {
-		var diffSummary, diffSummaryError = this.ReadDiffSummary(parentHash, logEntry.CommitHash)
+		var diffSummary, diffSummaryError = gitClient.ReadDiffSummary(parentHash, logEntry.CommitHash)
 		if nil != diffSummaryError {
 			return git_stories_api.DetailedLogEntryRow{}, diffSummaryError
 		}
@@ -143,9 +143,9 @@ func (this *GitClient) ReadDetailedLogEntryRow(logEntry LogEntryRow) (git_storie
 	return row, nil
 }
 
-func (this *GitClient) GetCommandName() string {
-	if this.commandName != "" {
-		return this.commandName
+func (gitClient *GitClient) GetCommandName() string {
+	if gitClient.commandName != "" {
+		return gitClient.commandName
 	} else {
 		return "git"
 	}
