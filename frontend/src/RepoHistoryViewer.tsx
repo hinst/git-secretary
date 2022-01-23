@@ -68,8 +68,7 @@ export class RepoHistoryViewer extends Component<Props, State> {
         this.setState({isLoading: true});
         try {
             const url = Common.apiUrl + '/stories?' +
-                'directory=' + encodeURIComponent(this.props.directory || '') + '&' +
-                'lengthLimit=20';
+                'directory=' + encodeURIComponent(this.props.directory || '');
             const response = await fetch(url);
             const stories: StoryEntry[] = await response.json();
             for (let i = 0; i < stories.length; i++)

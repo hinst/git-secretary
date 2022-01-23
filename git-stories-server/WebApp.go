@@ -138,6 +138,6 @@ func (me *WebApp) getStories(responseWriter http.ResponseWriter, request *http.R
 	var outputData, outputError = ioutil.ReadAll(bufio.NewReader(output))
 	common.AssertError(outputError)
 	responseWriter.Header().Add(contentTypeHeaderKey, contentTypeJson)
-	var _, ignoredResponseOutputError = responseWriter.Write(outputData)
-	common.Use(ignoredResponseOutputError)
+	var _, responseWriteError = responseWriter.Write(outputData)
+	common.Use(responseWriteError)
 }
