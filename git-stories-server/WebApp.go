@@ -12,29 +12,35 @@ import (
 
 	"github.com/hinst/go-common"
 	"github.com/pkg/browser"
+	bolt "go.etcd.io/bbolt"
 )
 
 type WebApp struct {
-	webPath       string
 	configuration Configuration
+	storage       *bolt.DB
 }
 
-func (me *WebApp) Init() {
-	if len(me.webPath) == 0 {
-		me.webPath = "/git-stories"
-	}
+const FILE_PERMISSION_OWNER_READ_WRITE = 600
+
+func (me *WebApp) Create() {
+	me.configuration.SetDefault()
+	me.loadConfiguration()
+	var dbOptions = *bolt.DefaultOptions
+	dbOptions.Timeout = 1
+	var e error
+	me.storage, e = bolt.Open("./storage.bolt", FILE_PERMISSION_OWNER_READ_WRITE, &dbOptions)
+	common.AssertWrapped(e, "Unable to open storage file")
 }
 
 func (me *WebApp) GetWebFilePath() string {
-	return me.webPath + "/static-files"
+	return me.configuration.WebPath + "/static-files"
 }
 
 func (me *WebApp) Start() {
-	me.loadConfiguration()
 	var fileServer = http.FileServer(http.Dir("./frontend"))
 	var webFilePath = me.GetWebFilePath()
 	http.Handle(webFilePath+"/", http.StripPrefix(webFilePath+"/", fileServer))
-	var webApiPath = me.webPath + "/api"
+	var webApiPath = me.configuration.WebPath + "/api"
 	me.handle(webApiPath+"/repoHistory", me.getRepoHistory)
 	me.handle(webApiPath+"/commits", me.commits)
 	me.handle(webApiPath+"/fullLog", me.getFullLog)

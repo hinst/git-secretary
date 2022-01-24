@@ -21,6 +21,6 @@ func main() {
 	}
 
 	var webApp WebApp
-	webApp.Init()
+	webApp.Create()
 	webApp.Start()
 }
