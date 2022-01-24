@@ -20,7 +20,7 @@ type WebApp struct {
 	storage       *bolt.DB
 }
 
-const FILE_PERMISSION_OWNER_READ_WRITE = 600
+const FILE_PERMISSION_OWNER_READ_WRITE = 0600
 
 func (me *WebApp) Create() {
 	me.configuration.SetDefault()
