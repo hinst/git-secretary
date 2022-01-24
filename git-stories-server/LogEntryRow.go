@@ -1,4 +1,4 @@
-package git_client
+package main
 
 import (
 	"fmt"

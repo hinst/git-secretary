@@ -1,4 +1,4 @@
-package git_client
+package main
 
 import (
 	"log"
@@ -8,7 +8,7 @@ import (
 	"time"
 
 	git_stories_api "github.com/hinst/git-stories-api"
-	"github.com/hinst/go-common"
+	common "github.com/hinst/go-common"
 )
 
 type GitClient struct {

@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"git-stories-server/git_client"
 	"io/ioutil"
 	"log"
 	"math"
@@ -86,7 +85,7 @@ func (me *WebApp) getRepoHistory(_ http.ResponseWriter, request *http.Request) {
 
 func (me *WebApp) commits(responseWriter http.ResponseWriter, request *http.Request) {
 	var directory = request.URL.Query()["directory"][0]
-	var commits, e = git_client.CreateGitClient(directory).ReadLog(100)
+	var commits, e = CreateGitClient(directory).ReadLog(100)
 	if e == nil {
 		writeJson(responseWriter, commits)
 	}
@@ -94,7 +93,7 @@ func (me *WebApp) commits(responseWriter http.ResponseWriter, request *http.Requ
 
 func (me *WebApp) getFullLog(responseWriter http.ResponseWriter, request *http.Request) {
 	var directory = request.URL.Query()["directory"][0]
-	var log, e = git_client.CreateGitClient(directory).ReadDetailedLog(100)
+	var log, e = CreateGitClient(directory).ReadDetailedLog(100)
 	if nil != e {
 		panic(e)
 	}
@@ -114,7 +113,7 @@ func (me *WebApp) getStories(responseWriter http.ResponseWriter, request *http.R
 		common.AssertError(e)
 		lengthLimit = extractedLengthLimit
 	}
-	var rows, gitError = git_client.CreateGitClient(directory).
+	var rows, gitError = CreateGitClient(directory).
 		SetDebugLogEnabled(true).
 		ReadDetailedLog(lengthLimit)
 	if gitError != nil {
