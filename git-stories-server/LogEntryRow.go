@@ -12,15 +12,15 @@ type LogEntryRow struct {
 
 var _ fmt.Stringer = &LogEntryRow{}
 
-func (this *LogEntryRow) String() string {
-	return this.CommitHash + " <- " + strings.Join(this.ParentHashes, ",")
+func (row *LogEntryRow) String() string {
+	return row.CommitHash + " <- " + strings.Join(row.ParentHashes, ",")
 }
 
-func (this *LogEntryRow) ParseGitLine(line string) {
+func (row *LogEntryRow) ParseGitLine(line string) {
 	var parts = strings.Split(line, " ")
-	this.CommitHash = parts[0]
-	this.ParentHashes = nil
+	row.CommitHash = parts[0]
+	row.ParentHashes = nil
 	for i := 1; i < len(parts); i++ {
-		this.ParentHashes = append(this.ParentHashes, parts[i])
+		row.ParentHashes = append(row.ParentHashes, parts[i])
 	}
 }
