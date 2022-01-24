@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	git_stories_api "github.com/hinst/git-stories-api"
+	"github.com/hinst/go-common"
 	bolt "go.etcd.io/bbolt"
 )
 
@@ -60,13 +61,13 @@ func (reader *cachedGitClient_DetailedLogReader) Load(logEntries []LogEntryRow) 
 }
 
 func (reader *cachedGitClient_DetailedLogReader) loadRows(transaction *bolt.Tx) error {
-	var bucket, bucketError = transaction.CreateBucketIfNotExists(BUCKET_NAME_LOG_ENTRY_ROWS_BYTES)
-	if nil != bucketError {
-		return bucketError
-	}
+	var bucket = transaction.Bucket(BUCKET_NAME_LOG_ENTRY_ROWS_BYTES)
 	for _, entry := range reader.logEntries {
 		var row git_stories_api.DetailedLogEntryRow
-		var cachedRowBytes = bucket.Get([]byte(entry.CommitHash))
+		var cachedRowBytes []byte
+		if bucket != nil {
+			cachedRowBytes = bucket.Get([]byte(entry.CommitHash))
+		}
 		if cachedRowBytes == nil { // new row
 			var e error
 			row, e = reader.gitClient.ReadDetailedLogEntryRow(entry)
@@ -88,7 +89,7 @@ func (reader *cachedGitClient_DetailedLogReader) loadRows(transaction *bolt.Tx) 
 func (reader *cachedGitClient_DetailedLogReader) storeCachedRows(transaction *bolt.Tx) error {
 	var bucket, bucketError = transaction.CreateBucketIfNotExists(BUCKET_NAME_LOG_ENTRY_ROWS_BYTES)
 	if nil != bucketError {
-		return bucketError
+		return common.CreateException("Unable to obtain bucket", bucketError)
 	}
 	for _, row := range reader.newRows {
 		var rowBytes, jsonError = json.Marshal(row)
@@ -97,7 +98,7 @@ func (reader *cachedGitClient_DetailedLogReader) storeCachedRows(transaction *bo
 		}
 		bucketError = bucket.Put([]byte(row.CommitHash), rowBytes)
 		if nil != bucketError {
-			return bucketError
+			return common.CreateException("Unable to write bucket", bucketError)
 		}
 	}
 	return nil

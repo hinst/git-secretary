@@ -27,6 +27,7 @@ func (me *WebApp) Create() {
 	me.loadConfiguration()
 	var dbOptions = *bolt.DefaultOptions
 	dbOptions.Timeout = 1
+	dbOptions.ReadOnly = false
 	var e error
 	me.storage, e = bolt.Open("./storage.bolt", FILE_PERMISSION_OWNER_READ_WRITE, &dbOptions)
 	common.AssertWrapped(e, "Unable to open storage file")
@@ -124,7 +125,8 @@ func (me *WebApp) getStories(responseWriter http.ResponseWriter, request *http.R
 		ReadDetailedLog(lengthLimit)
 	if gitError != nil {
 		responseWriter.WriteHeader(http.StatusInternalServerError)
-		responseWriter.Write([]byte("Unable to open repository at path \"" + directory + "\""))
+		responseWriter.Write([]byte("Unable to open repository at path \"" + directory + "\"\n" +
+			gitError.Error()))
 		return
 	}
 	var workingDirectory, getwdError = os.Getwd()
