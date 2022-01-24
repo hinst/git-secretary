@@ -16,7 +16,8 @@ type CachedGitClient struct {
 	gitClient *GitClient
 }
 
-func (client *CachedGitClient) Create(directory string) *CachedGitClient {
+func (client *CachedGitClient) Create(storage *bolt.DB, directory string) *CachedGitClient {
+	client.storage = storage
 	client.gitClient = CreateGitClient(directory)
 	return client
 }

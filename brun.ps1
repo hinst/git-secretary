@@ -1,5 +1,5 @@
 .\build-backend.ps1
-$built=$?
+$built = $LASTEXITCODE
 if (-Not $built) {
     exit $built
 }

@@ -119,8 +119,8 @@ func (me *WebApp) getStories(responseWriter http.ResponseWriter, request *http.R
 		common.AssertError(e)
 		lengthLimit = extractedLengthLimit
 	}
-	var rows, gitError = CreateGitClient(directory).
-		SetDebugLogEnabled(true).
+
+	var rows, gitError = (&CachedGitClient{}).Create(me.storage, directory).
 		ReadDetailedLog(lengthLimit)
 	if gitError != nil {
 		responseWriter.WriteHeader(http.StatusInternalServerError)
