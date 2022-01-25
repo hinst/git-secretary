@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime/debug"
 )
 
 func main() {
 	fmt.Println("Now starting...")
+	debug.SetGCPercent(30)
 
 	var workingDirectory = flag.String("wd", "", "Working directory")
 	flag.Parse()
