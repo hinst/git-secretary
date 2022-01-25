@@ -12,12 +12,12 @@ const BUCKET_NAME_LOG_ENTRY_ROWS = "LogEntryRows"
 
 var BUCKET_NAME_LOG_ENTRY_ROWS_BYTES = []byte(BUCKET_NAME_LOG_ENTRY_ROWS)
 
-type CachedGitClientReportProgressFunction func(done int, total int)
+type CachedGitClientReceiveProgressFunction func(total int, done int)
 
 type CachedGitClient struct {
-	storage        *bolt.DB
-	gitClient      *GitClient
-	reportProgress CachedGitClientReportProgressFunction
+	storage         *bolt.DB
+	gitClient       *GitClient
+	receiveProgress CachedGitClientReceiveProgressFunction
 }
 
 func (client *CachedGitClient) Create(storage *bolt.DB, directory string) *CachedGitClient {
@@ -26,8 +26,8 @@ func (client *CachedGitClient) Create(storage *bolt.DB, directory string) *Cache
 	return client
 }
 
-func (client *CachedGitClient) SetReportProgress(function CachedGitClientReportProgressFunction) {
-	client.reportProgress = function
+func (client *CachedGitClient) SetProgressReceiver(function CachedGitClientReceiveProgressFunction) {
+	client.receiveProgress = function
 }
 
 func (client *CachedGitClient) ReadDetailedLog(lengthLimit int) ([]git_stories_api.DetailedLogEntryRow, error) {
@@ -36,25 +36,25 @@ func (client *CachedGitClient) ReadDetailedLog(lengthLimit int) ([]git_stories_a
 		return nil, readError
 	}
 	var logReader cachedGitClient_DetailedLogReader
-	logReader.Create(client.storage, client.gitClient, client.reportProgress)
+	logReader.Create(client.storage, client.gitClient, client.receiveProgress)
 	var error = logReader.Load(logEntries)
 	return logReader.GetRows(), error
 }
 
 type cachedGitClient_DetailedLogReader struct {
-	storage        *bolt.DB
-	gitClient      *GitClient
-	reportProgress CachedGitClientReportProgressFunction
-	logEntries     []LogEntryRow
-	rows           []git_stories_api.DetailedLogEntryRow
-	newRows        []git_stories_api.DetailedLogEntryRow
+	storage         *bolt.DB
+	gitClient       *GitClient
+	receiveProgress CachedGitClientReceiveProgressFunction
+	logEntries      []LogEntryRow
+	rows            []git_stories_api.DetailedLogEntryRow
+	newRows         []git_stories_api.DetailedLogEntryRow
 }
 
 func (reader *cachedGitClient_DetailedLogReader) Create(storage *bolt.DB, gitClient *GitClient,
-	reportProgress CachedGitClientReportProgressFunction) *cachedGitClient_DetailedLogReader {
+	reportProgress CachedGitClientReceiveProgressFunction) *cachedGitClient_DetailedLogReader {
 	reader.storage = storage
 	reader.gitClient = gitClient
-	reader.reportProgress = reportProgress
+	reader.receiveProgress = reportProgress
 	return reader
 }
 
@@ -92,8 +92,8 @@ func (reader *cachedGitClient_DetailedLogReader) loadRows(transaction *bolt.Tx) 
 			}
 		}
 		reader.rows = append(reader.rows, row)
-		if reader.reportProgress != nil {
-			reader.reportProgress(entryIndex, len(reader.logEntries))
+		if reader.receiveProgress != nil {
+			reader.receiveProgress(len(reader.logEntries), entryIndex)
 		}
 	}
 	return nil
