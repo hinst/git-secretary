@@ -18,6 +18,7 @@ import (
 type WebApp struct {
 	configuration Configuration
 	storage       *bolt.DB
+	tasks         WebTaskManager
 }
 
 const FILE_PERMISSION_OWNER_READ_WRITE = 0600
@@ -45,7 +46,8 @@ func (me *WebApp) Start() {
 	me.handle(webApiPath+"/repoHistory", me.getRepoHistory)
 	me.handle(webApiPath+"/commits", me.commits)
 	me.handle(webApiPath+"/fullLog", me.getFullLog)
-	me.handle(webApiPath+"/stories", me.getStories)
+	me.handle(webApiPath+"/stories", me.getStoriesAsync)
+	me.handle(webApiPath+"/task", me.getTask)
 
 	var filePicker = FilePicker{WebPath: webApiPath}
 	filePicker.Initialize(me.handle)
@@ -107,36 +109,83 @@ func (me *WebApp) getFullLog(responseWriter http.ResponseWriter, request *http.R
 	writeJson(responseWriter, log)
 }
 
-func (me *WebApp) getStories(responseWriter http.ResponseWriter, request *http.Request) {
-	var directory = request.URL.Query()["directory"][0]
+func (me *WebApp) requireDirectoryArgument(responseWriter http.ResponseWriter, request *http.Request) (directory string) {
+	directory = request.URL.Query().Get("directory")
 	if len(directory) == 0 {
 		responseWriter.WriteHeader(http.StatusBadRequest)
 		responseWriter.Write([]byte("Query argument \"directory\" is required"))
+	}
+	return
+}
+
+func (me *WebApp) getStoriesAsync(responseWriter http.ResponseWriter, request *http.Request) {
+	var directory = me.requireDirectoryArgument(responseWriter, request)
+	if len(directory) == 0 {
 		return
 	}
-	var lengthLimit = math.MaxInt32
-	if len(request.URL.Query()["lengthLimit"]) > 0 {
-		var extractedLengthLimit, e = strconv.Atoi(request.URL.Query()["lengthLimit"][0])
-		common.AssertError(e)
-		lengthLimit = extractedLengthLimit
-	}
+	var taskId = me.tasks.Add(&WebTask{})
+	responseWriter.WriteHeader(http.StatusOK)
+	responseWriter.Write([]byte(strconv.FormatUint(uint64(taskId), 10)))
+	go me.readStories(taskId, directory)
+}
 
-	var rows, gitError = (&CachedGitClient{}).Create(me.storage, directory).
-		ReadDetailedLog(lengthLimit)
-	if gitError != nil {
-		responseWriter.WriteHeader(http.StatusInternalServerError)
-		responseWriter.Write([]byte("Unable to open repository at path \"" + directory + "\"\n" +
-			gitError.Error()))
+func (me *WebApp) readStories(taskId uint, directory string) {
+	var gitClient = (&CachedGitClient{}).Create(me.storage, directory)
+	gitClient.SetProgressReceiver(func(total int, done int) {
+		me.tasks.Update(taskId, func(task *WebTask) {
+			task.Total = total
+			task.Done = done
+		})
+	})
+	var rows, gitError = gitClient.ReadDetailedLog(math.MaxInt)
+	if nil != gitError {
+		me.tasks.Update(taskId, func(task *WebTask) {
+			task.Error = gitError.Error()
+		})
 		return
 	}
 	var workingDirectory, getwdError = os.Getwd()
 	common.AssertError(getwdError)
 	var pluginFilePath = workingDirectory + "/" + me.configuration.Plugin
 	var pluginRunner = PluginRunner{PluginFilePath: pluginFilePath}
-	var storyEntries = pluginRunner.Run(rows)
-	var outputBytes, jsonError = json.Marshal(storyEntries)
-	common.AssertWrapped(jsonError, "Unable to encode json: storyEntries")
+	var storyEntries, pluginError = pluginRunner.Run(rows)
+	if nil != pluginError {
+		me.tasks.Update(taskId, func(task *WebTask) {
+			task.Error = pluginError.Error()
+		})
+		return
+	}
+	me.tasks.Update(taskId, func(task *WebTask) {
+		task.StoryEntries = storyEntries
+	})
+}
+
+func (me *WebApp) getTask(responseWriter http.ResponseWriter, request *http.Request) {
+	var idString = request.URL.Query().Get("id")
+	if len(idString) == 0 {
+		responseWriter.WriteHeader(http.StatusBadGateway)
+		responseWriter.Write([]byte("Query parameter is required: id"))
+		return
+	}
+	var id64, idParseError = strconv.ParseUint(idString, 10, int(SizeOfUint))
+	if nil != idParseError {
+		responseWriter.WriteHeader(http.StatusBadRequest)
+		responseWriter.Write([]byte("Query parameter must be an unsigned integer: id; got: " + idString + "\n" +
+			idParseError.Error()))
+		return
+	}
+	var id = uint(id64)
+	var task = me.tasks.Get(id)
+	if nil == task {
+		responseWriter.WriteHeader(http.StatusNotFound)
+		responseWriter.Write([]byte("Task not found: id=" + strconv.FormatUint(id64, 10)))
+		return
+	}
+	var taskBytes, jsonError = json.Marshal(task)
+	if jsonError != nil {
+		responseWriter.WriteHeader(http.StatusInternalServerError)
+		responseWriter.Write([]byte("Unable to encode json\n" + jsonError.Error()))
+	}
 	responseWriter.Header().Add(contentTypeHeaderKey, contentTypeJson)
-	var _, responseWriteError = responseWriter.Write(outputBytes)
-	common.Use(responseWriteError)
+	responseWriter.Write(taskBytes)
 }
