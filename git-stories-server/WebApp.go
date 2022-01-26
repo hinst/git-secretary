@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
-	"math"
 	"net/http"
 	"os"
 	"strconv"
@@ -128,13 +127,24 @@ func (me *WebApp) getStoriesAsync(responseWriter http.ResponseWriter, request *h
 	if len(directory) == 0 {
 		return
 	}
+	var lengthLimit = 0
+	var lengthLimitText = request.URL.Query().Get("lengthLimit")
+	if len(lengthLimitText) > 0 {
+		var parsedLengthLimit, e = strconv.Atoi(lengthLimitText)
+		if nil != e {
+			responseWriter.WriteHeader(http.StatusBadRequest)
+			responseWriter.Write([]byte("Unable to parse query argument lengthLimit as integer: \"" + lengthLimitText + "\""))
+			return
+		}
+		lengthLimit = parsedLengthLimit
+	}
 	var taskId = me.tasks.Add(&WebTask{})
 	responseWriter.WriteHeader(http.StatusOK)
 	responseWriter.Write([]byte(strconv.FormatUint(uint64(taskId), 10)))
-	go me.readStories(taskId, directory)
+	go me.readStories(taskId, directory, lengthLimit)
 }
 
-func (me *WebApp) readStories(taskId uint, directory string) {
+func (me *WebApp) readStories(taskId uint, directory string, lengthLimit int) {
 	var gitClient = (&CachedGitClient{}).Create(me.storage, directory)
 	gitClient.SetProgressReceiver(func(total int, done int) {
 		me.tasks.Update(taskId, func(task *WebTask) {
@@ -142,7 +152,7 @@ func (me *WebApp) readStories(taskId uint, directory string) {
 			task.Done = done
 		})
 	})
-	var rows, gitError = gitClient.ReadDetailedLog(math.MaxInt)
+	var rows, gitError = gitClient.ReadDetailedLog(0)
 	if nil != gitError {
 		me.tasks.Update(taskId, func(task *WebTask) {
 			task.Error = gitError.Error()
@@ -162,6 +172,9 @@ func (me *WebApp) readStories(taskId uint, directory string) {
 	}
 	me.tasks.Update(taskId, func(task *WebTask) {
 		task.StoryEntries = storyEntries
+		if lengthLimit > 0 && len(task.StoryEntries) > lengthLimit {
+			task.StoryEntries = task.StoryEntries[0:lengthLimit]
+		}
 	})
 }
 

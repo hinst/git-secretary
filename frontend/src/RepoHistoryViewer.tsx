@@ -4,6 +4,7 @@ import { StoryEntry } from './StoryEntry';
 import lodash from 'lodash';
 import { getStartOfDay } from './dateTime';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import WarningIcon from '@mui/icons-material/Warning';
 import ErrorIcon from '@mui/icons-material/Error';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { replaceAll } from './string';
@@ -26,6 +27,7 @@ class State {
 }
 
 export class RepoHistoryViewer extends Component<Props, State> {
+    private static readonly DAY_LIMIT = 100;
     private loadingTaskTimer?: number;
 
     constructor(props: Props) {
@@ -87,14 +89,15 @@ export class RepoHistoryViewer extends Component<Props, State> {
 
     private async receiveLoadClick() {
         this.setState({ isLoading: true, error: undefined });
-        const url = Common.apiUrl + '/stories?' +
-            'directory=' + encodeURIComponent(this.props.directory || '');
+        const url = Common.apiUrl + '/stories' +
+            '?directory=' + encodeURIComponent(this.props.directory || '') +
+            '&lengthLimit=' + encodeURIComponent(RepoHistoryViewer.DAY_LIMIT * 10);
         try {
             const response = await fetch(url);
             if (response.ok) {
                 const taskId = parseInt(await response.text());
                 this.setState({ isLoading: true, taskId: taskId, error: undefined });
-                this.loadingTaskTimer = window.setInterval(() => this.checkStoriesLoaded(), 500);
+                this.loadingTaskTimer = window.setTimeout(() => this.checkStoriesLoaded(), 500);
             } else {
                 const errorText = await response.text();
                 this.setState({ isLoading: false, taskId: undefined, error: errorText });
@@ -105,12 +108,14 @@ export class RepoHistoryViewer extends Component<Props, State> {
     }
 
     private stopStoriesLoading() {
-        window.clearInterval(this.loadingTaskTimer);
+        if (this.loadingTaskTimer != null)
+            window.clearInterval(this.loadingTaskTimer);
         this.loadingTaskTimer = undefined;
         this.setState({ taskId: undefined, isLoading: false});
     }
 
     private async checkStoriesLoaded() {
+        this.loadingTaskTimer = undefined;
         if (!this.state.taskId)
             return this.stopStoriesLoading();
         const url = Common.apiUrl + '/task?id=' + encodeURIComponent(this.state.taskId);
@@ -128,6 +133,7 @@ export class RepoHistoryViewer extends Component<Props, State> {
                 this.stopStoriesLoading();
             } else {
                 this.setState({ loadingTotal: task.total, loadingDone: task.done });
+                this.loadingTaskTimer = window.setTimeout(() => this.checkStoriesLoaded(), 500);
             }
         } else {
             this.setState({ error: await response.text(), stories: [] });
@@ -161,8 +167,21 @@ export class RepoHistoryViewer extends Component<Props, State> {
         const storyDays: StoryEntry[][] = Object.values(
             lodash.groupBy(this.state.stories, (story: StoryEntry) => getStartOfDay(story.getTime()))
         );
+        const isDayLimitExceeded = storyDays.length > RepoHistoryViewer.DAY_LIMIT;
+        const totalStoryDays = storyDays.length;
+        if (isDayLimitExceeded) {
+            storyDays.splice(RepoHistoryViewer.DAY_LIMIT);
+        }
         return <div>
-            { storyDays.map(storyDay => this.renderStoryDay(storyDay))  }
+            { storyDays.map(storyDay => this.renderStoryDay(storyDay)) }
+            { isDayLimitExceeded
+                ? <div>
+                    <WarningIcon style={{ verticalAlign: 'middle' }} />&nbsp;
+                    A limited number of days is displayed:
+                    {RepoHistoryViewer.DAY_LIMIT} of {totalStoryDays}
+                </div>
+                : undefined
+            }
         </div>;
     }
 
