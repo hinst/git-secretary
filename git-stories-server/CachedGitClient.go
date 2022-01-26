@@ -9,6 +9,7 @@ import (
 )
 
 const BUCKET_NAME_LOG_ENTRY_ROWS = "LogEntryRows"
+const CACHED_GIT_CLIENT_PAGE_SIZE = 1000
 
 var BUCKET_NAME_LOG_ENTRY_ROWS_BYTES = []byte(BUCKET_NAME_LOG_ENTRY_ROWS)
 
@@ -62,10 +63,10 @@ func (reader *cachedGitClient_DetailedLogReader) Create(storage *bolt.DB, gitCli
 
 func (reader *cachedGitClient_DetailedLogReader) Load(logEntries LogEntryRows) error {
 	reader.allLogEntries = logEntries
-	var logEntryGroups = logEntries.GetPortions(1000)
-	for _, logEntries := range logEntryGroups {
+	var logEntryGroups = logEntries.GetPortions(CACHED_GIT_CLIENT_PAGE_SIZE)
+	for groupIndex, logEntries := range logEntryGroups {
 		var transactionError = reader.storage.View(func(transaction *bolt.Tx) error {
-			return reader.loadRows(logEntries, transaction)
+			return reader.loadRows(groupIndex, logEntries, transaction)
 		})
 		if nil != transactionError {
 			return transactionError
@@ -81,7 +82,7 @@ func (reader *cachedGitClient_DetailedLogReader) Load(logEntries LogEntryRows) e
 	return nil
 }
 
-func (reader *cachedGitClient_DetailedLogReader) loadRows(logEntries LogEntryRows, transaction *bolt.Tx) error {
+func (reader *cachedGitClient_DetailedLogReader) loadRows(groupIndex int, logEntries LogEntryRows, transaction *bolt.Tx) error {
 	var bucket = transaction.Bucket(BUCKET_NAME_LOG_ENTRY_ROWS_BYTES)
 	for entryIndex, entry := range logEntries {
 		var row git_stories_api.DetailedLogEntryRow
@@ -104,7 +105,8 @@ func (reader *cachedGitClient_DetailedLogReader) loadRows(logEntries LogEntryRow
 		}
 		reader.rows = append(reader.rows, row)
 		if reader.receiveProgress != nil {
-			reader.receiveProgress(len(reader.allLogEntries), entryIndex)
+			var overallEntryIndex = (CACHED_GIT_CLIENT_PAGE_SIZE * groupIndex) + entryIndex
+			reader.receiveProgress(len(reader.allLogEntries), overallEntryIndex)
 		}
 	}
 	return nil
