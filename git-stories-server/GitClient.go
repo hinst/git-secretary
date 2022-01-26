@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -42,6 +43,8 @@ func (gitClient *GitClient) ReadLog(lengthLimit int) ([]LogEntryRow, error) {
 	var args = []string{"log", "--format=\"%H %P\""}
 	if lengthLimit > 0 {
 		args = append(args, "-n", strconv.Itoa(lengthLimit))
+	} else {
+		args = append(args, "-n", strconv.Itoa(math.MaxInt))
 	}
 	args = append(args, "HEAD")
 	var outputText, e = gitClient.Run(args)
