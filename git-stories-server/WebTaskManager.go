@@ -50,7 +50,7 @@ func (manager *WebTaskManager) Get(id uint) *WebTask {
 	defer manager.locker.Unlock()
 
 	var task = manager.tasks[id]
-	if task.IsDone() {
+	if task != nil && task.IsDone() {
 		delete(manager.tasks, id)
 	}
 	return task
