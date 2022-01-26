@@ -76,10 +76,6 @@ func (gitClient *GitClient) ReadCommitDate(commitHash string) (time.Time, error)
 	return time.Unix(second, 0), nil
 }
 
-func checkSpaceOrTab(r rune) bool {
-	return r == ' ' || r == '\t'
-}
-
 func (gitClient *GitClient) ReadDiffSummary(commitHash1, commitHash2 string) ([]git_stories_api.DiffSummaryRow, error) {
 	var outputText, runError = gitClient.Run([]string{"diff", "--numstat", commitHash1, commitHash2})
 	if runError != nil {
@@ -90,7 +86,10 @@ func (gitClient *GitClient) ReadDiffSummary(commitHash1, commitHash2 string) ([]
 	for i := 0; i < len(lines); i++ {
 		var line = strings.TrimSpace(lines[i])
 		if len(line) > 0 {
-			var parts = strings.FieldsFunc(line, checkSpaceOrTab)
+			var parts, e = GitSplitDiffSummaryLine(line)
+			if nil != e {
+				continue
+			}
 			var row = git_stories_api.DiffSummaryRow{
 				InsertionCount: diffSummaryPartToLong(parts[0]),
 				DeletionCount:  diffSummaryPartToLong(parts[1]),

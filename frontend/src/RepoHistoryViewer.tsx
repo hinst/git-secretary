@@ -135,8 +135,6 @@ export class RepoHistoryViewer extends Component<Props, State> {
 
     private renderStoryEntry(entry: StoryEntry) {
         const key = entry.CommitHash + '_' + entry.SourceFilePath;
-        if (entry.SourceFilePath.startsWith('{'))
-            console.log(entry);
         return <li key={key}>
             {entry.Description}
         </li>;
