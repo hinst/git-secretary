@@ -4,4 +4,4 @@ if (-Not $built) {
     exit $built
 }
 
-.\dist\git-stories-server --wd C:\Dev\git-stories\dist
+.\dist\git-stories-server -wd=C:\Dev\git-stories\dist -ao=false

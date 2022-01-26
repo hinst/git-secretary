@@ -65,10 +65,12 @@ func (me *WebApp) startListening() {
 	var portString = strconv.Itoa(me.configuration.PortNumber)
 	var url = "http://localhost:" + portString + me.GetWebFilePath()
 	log.Println("Will listen at " + url)
-	go func() {
-		time.Sleep(1 * time.Second)
-		browser.OpenURL(url)
-	}()
+	if me.configuration.AutoOpenEnabled {
+		go func() {
+			time.Sleep(1 * time.Second)
+			browser.OpenURL(url)
+		}()
+	}
 	log.Fatal(http.ListenAndServe(":"+portString, nil))
 }
 

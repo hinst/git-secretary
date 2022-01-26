@@ -3,15 +3,17 @@ package main
 import "runtime"
 
 type Configuration struct {
-	Plugin     string
-	WebPath    string
-	PortNumber int
+	Plugin          string
+	WebPath         string
+	PortNumber      int
+	AutoOpenEnabled bool
 }
 
 func (configuration *Configuration) SetDefault() *Configuration {
 	configuration.Plugin = "plugins/story-girls-standard"
 	configuration.WebPath = "/git-stories"
 	configuration.PortNumber = 3003
+	configuration.AutoOpenEnabled = true
 	return configuration
 }
 
