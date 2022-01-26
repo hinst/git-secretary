@@ -4,9 +4,11 @@ import { StoryEntry } from './StoryEntry';
 import lodash from 'lodash';
 import { getStartOfDay } from './dateTime';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import ErrorIcon from '@mui/icons-material/Error';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { replaceAll } from './string';
 import { Link, Navigate } from 'react-router-dom';
+import { WebTask } from './WebTask';
 
 class Props {
     directory?: string;
@@ -14,11 +16,15 @@ class Props {
 
 class State {
     stories: StoryEntry[] = [];
+    error?: string;
+    taskId?: number;
     isLoading: boolean = false;
     goTo?: string;
 }
 
 export class RepoHistoryViewer extends Component<Props, State> {
+    private loadingTaskTimer?: number;
+
     constructor(props: Props) {
         super(props);
         const state = new State();
@@ -45,16 +51,20 @@ export class RepoHistoryViewer extends Component<Props, State> {
                     className="w3-btn w3-black w3-bar-item"
                     style={{marginLeft: 4}}
                 >
-                    <RefreshIcon className={ this.state.isLoading ? "rotating" : undefined }/>
+                    <RefreshIcon className={ this.state.isLoading ? 'rotating' : undefined }/>
                 </button>
                 <div className="w3-bar-item" style={{fontSize: 16}}>
                     {this.repositoryName}
                 </div>
             </div>
             <div>
+                {this.state.error
+                    ? this.renderError()
+                    : undefined
+                }
                 {this.state.stories != null
                     ? this.renderStories()
-                    : null
+                    : undefined
                 }
             </div>
         </div>;
@@ -70,13 +80,48 @@ export class RepoHistoryViewer extends Component<Props, State> {
             const url = Common.apiUrl + '/stories?' +
                 'directory=' + encodeURIComponent(this.props.directory || '');
             const response = await fetch(url);
-            const stories: StoryEntry[] = await response.json();
-            for (let i = 0; i < stories.length; i++)
-                stories[i] = Object.assign(new StoryEntry(), stories[i]);
-            this.setState({stories});
+            if (response.ok) {
+                const taskId = parseInt(await response.text());
+                this.setState({ taskId: taskId, error: undefined });
+                this.loadingTaskTimer = window.setInterval(() => this.checkStoriesLoaded(), 500);
+            } else {
+                const errorText = await response.text();
+                this.setState({ taskId: undefined, error: errorText });
+            }
         } finally {
-            this.setState({isLoading: false});
         }
+    }
+
+    private stopStoriesLoading() {
+        window.clearInterval(this.loadingTaskTimer);
+        this.loadingTaskTimer = undefined;
+        this.setState({ taskId: undefined, isLoading: false});
+    }
+
+    private async checkStoriesLoaded() {
+        if (!this.state.taskId)
+            return this.stopStoriesLoading();
+        const url = Common.apiUrl + '/task?id=' + encodeURIComponent(this.state.taskId);
+        const response = await fetch(url);
+        if (response.ok) {
+            const task: WebTask = await response.json();
+            if (task.error) {
+                this.setState({ error: task.error, stories: [] });
+                this.stopStoriesLoading();
+            } else if (task.storyEntries) {
+                const stories: StoryEntry[] = task.storyEntries;
+                for (let i = 0; i < stories.length; i++)
+                    stories[i] = Object.assign(new StoryEntry(), stories[i]);
+                this.setState({ error: undefined, stories: stories });
+                this.stopStoriesLoading();
+            }
+        }
+    }
+
+    private renderError() {
+        return <div>
+            <ErrorIcon/> { this.state.error }
+        </div>;
     }
 
     private renderStories() {
@@ -89,7 +134,9 @@ export class RepoHistoryViewer extends Component<Props, State> {
     }
 
     private renderStoryEntry(entry: StoryEntry) {
-        const key = entry.CommitHash + ' ' + entry.SourceFilePath;
+        const key = entry.CommitHash + '_' + entry.SourceFilePath;
+        if (entry.SourceFilePath.startsWith('{'))
+            console.log(entry);
         return <li key={key}>
             {entry.Description}
         </li>;
