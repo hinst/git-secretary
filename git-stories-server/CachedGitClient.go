@@ -45,7 +45,7 @@ type cachedGitClient_DetailedLogReader struct {
 	storage         *bolt.DB
 	gitClient       *GitClient
 	receiveProgress CachedGitClientReceiveProgressFunction
-	logEntries      []LogEntryRow
+	allLogEntries   LogEntryRows
 	rows            []git_stories_api.DetailedLogEntryRow
 	newRows         []git_stories_api.DetailedLogEntryRow
 }
@@ -55,24 +55,35 @@ func (reader *cachedGitClient_DetailedLogReader) Create(storage *bolt.DB, gitCli
 	reader.storage = storage
 	reader.gitClient = gitClient
 	reader.receiveProgress = reportProgress
+	reader.rows = nil
+	reader.newRows = nil
 	return reader
 }
 
-func (reader *cachedGitClient_DetailedLogReader) Load(logEntries []LogEntryRow) error {
-	reader.logEntries = logEntries
-	var transactionError = reader.storage.View(reader.loadRows)
-	if nil != transactionError {
-		return transactionError
+func (reader *cachedGitClient_DetailedLogReader) Load(logEntries LogEntryRows) error {
+	reader.allLogEntries = logEntries
+	var logEntryGroups = logEntries.GetPortions(1000)
+	for _, logEntries := range logEntryGroups {
+		var transactionError = reader.storage.View(func(transaction *bolt.Tx) error {
+			return reader.loadRows(logEntries, transaction)
+		})
+		if nil != transactionError {
+			return transactionError
+		}
+		if len(reader.newRows) > 0 {
+			transactionError = reader.storage.Update(reader.storeNewRows)
+		}
+		if nil != transactionError {
+			return transactionError
+		}
+		reader.newRows = nil
 	}
-	if len(reader.newRows) > 0 {
-		transactionError = reader.storage.Update(reader.storeCachedRows)
-	}
-	return transactionError
+	return nil
 }
 
-func (reader *cachedGitClient_DetailedLogReader) loadRows(transaction *bolt.Tx) error {
+func (reader *cachedGitClient_DetailedLogReader) loadRows(logEntries LogEntryRows, transaction *bolt.Tx) error {
 	var bucket = transaction.Bucket(BUCKET_NAME_LOG_ENTRY_ROWS_BYTES)
-	for entryIndex, entry := range reader.logEntries {
+	for entryIndex, entry := range logEntries {
 		var row git_stories_api.DetailedLogEntryRow
 		var cachedRowBytes []byte
 		if bucket != nil {
@@ -93,13 +104,13 @@ func (reader *cachedGitClient_DetailedLogReader) loadRows(transaction *bolt.Tx) 
 		}
 		reader.rows = append(reader.rows, row)
 		if reader.receiveProgress != nil {
-			reader.receiveProgress(len(reader.logEntries), entryIndex)
+			reader.receiveProgress(len(reader.allLogEntries), entryIndex)
 		}
 	}
 	return nil
 }
 
-func (reader *cachedGitClient_DetailedLogReader) storeCachedRows(transaction *bolt.Tx) error {
+func (reader *cachedGitClient_DetailedLogReader) storeNewRows(transaction *bolt.Tx) error {
 	var bucket, bucketError = transaction.CreateBucketIfNotExists(BUCKET_NAME_LOG_ENTRY_ROWS_BYTES)
 	if nil != bucketError {
 		return common.CreateException("Unable to obtain bucket", bucketError)

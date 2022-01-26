@@ -24,3 +24,15 @@ func (row *LogEntryRow) ParseGitLine(line string) {
 		row.ParentHashes = append(row.ParentHashes, parts[i])
 	}
 }
+
+type LogEntryRows []LogEntryRow
+
+func (rows LogEntryRows) GetPortions(portionSize int) (portions []LogEntryRows) {
+	for _, row := range rows {
+		if len(portions) == 0 || len(portions[len(portions)-1]) >= portionSize {
+			portions = append(portions, nil)
+		}
+		portions[len(portions)-1] = append(portions[len(portions)-1], row)
+	}
+	return
+}
