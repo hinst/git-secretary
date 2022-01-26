@@ -117,7 +117,7 @@ export class RepoHistoryViewer extends Component<Props, State> {
         const response = await fetch(url);
         if (response.ok) {
             const task: WebTask = await response.json();
-            if (task.error) {
+            if (task.error?.length) {
                 this.setState({ error: task.error, stories: [] });
                 this.stopStoriesLoading();
             } else if (task.storyEntries) {
