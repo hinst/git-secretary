@@ -23,6 +23,12 @@ type WebTaskManager struct {
 	locker  sync.Mutex
 }
 
+func (manager *WebTaskManager) Create() *WebTaskManager {
+	manager.counter = 0
+	manager.tasks = make(map[uint]*WebTask)
+	return manager
+}
+
 func (manager *WebTaskManager) Add(task *WebTask) uint {
 	manager.locker.Lock()
 	defer manager.locker.Unlock()

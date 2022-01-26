@@ -18,7 +18,7 @@ import (
 type WebApp struct {
 	configuration Configuration
 	storage       *bolt.DB
-	tasks         WebTaskManager
+	tasks         *WebTaskManager
 }
 
 const FILE_PERMISSION_OWNER_READ_WRITE = 0600
@@ -26,12 +26,15 @@ const FILE_PERMISSION_OWNER_READ_WRITE = 0600
 func (me *WebApp) Create() {
 	me.configuration.SetDefault()
 	me.loadConfiguration()
+
 	var dbOptions = *bolt.DefaultOptions
 	dbOptions.Timeout = 1
 	dbOptions.ReadOnly = false
-	var e error
-	me.storage, e = bolt.Open("./storage.bolt", FILE_PERMISSION_OWNER_READ_WRITE, &dbOptions)
+	var storage, e = bolt.Open("./storage.bolt", FILE_PERMISSION_OWNER_READ_WRITE, &dbOptions)
 	common.AssertWrapped(e, "Unable to open storage file")
+	me.storage = storage
+
+	me.tasks = (&WebTaskManager{}).Create()
 }
 
 func (me *WebApp) GetWebFilePath() string {
