@@ -9,6 +9,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { replaceAll } from './string';
 import { Link, Navigate } from 'react-router-dom';
 import { WebTask } from './WebTask';
+import { LinearProgress } from '@mui/material';
 
 class Props {
     directory?: string;
@@ -19,6 +20,8 @@ class State {
     error?: string;
     taskId?: number;
     isLoading: boolean = false;
+    loadingTotal?: number;
+    loadingDone?: number;
     goTo?: string;
 }
 
@@ -62,6 +65,14 @@ export class RepoHistoryViewer extends Component<Props, State> {
                     ? this.renderError()
                     : undefined
                 }
+            </div>
+            <div>
+                { this.state.isLoading
+                    ? this.renderLoading()
+                    : undefined
+                }
+            </div>
+            <div>
                 {this.state.stories != null
                     ? this.renderStories()
                     : undefined
@@ -75,20 +86,21 @@ export class RepoHistoryViewer extends Component<Props, State> {
     }
 
     private async receiveLoadClick() {
-        this.setState({isLoading: true});
+        this.setState({ isLoading: true, error: undefined });
+        const url = Common.apiUrl + '/stories?' +
+            'directory=' + encodeURIComponent(this.props.directory || '');
         try {
-            const url = Common.apiUrl + '/stories?' +
-                'directory=' + encodeURIComponent(this.props.directory || '');
             const response = await fetch(url);
             if (response.ok) {
                 const taskId = parseInt(await response.text());
-                this.setState({ taskId: taskId, error: undefined });
+                this.setState({ isLoading: true, taskId: taskId, error: undefined });
                 this.loadingTaskTimer = window.setInterval(() => this.checkStoriesLoaded(), 500);
             } else {
                 const errorText = await response.text();
-                this.setState({ taskId: undefined, error: errorText });
+                this.setState({ isLoading: false, taskId: undefined, error: errorText });
             }
-        } finally {
+        } catch (e) {
+            this.setState({ isLoading: false, error: (e as any).message });
         }
     }
 
@@ -114,14 +126,35 @@ export class RepoHistoryViewer extends Component<Props, State> {
                     stories[i] = Object.assign(new StoryEntry(), stories[i]);
                 this.setState({ error: undefined, stories: stories });
                 this.stopStoriesLoading();
+            } else {
+                this.setState({ loadingTotal: task.total, loadingDone: task.done });
             }
+        } else {
+            this.setState({ error: await response.text(), stories: [] });
+            this.stopStoriesLoading();
         }
     }
 
     private renderError() {
-        return <div>
-            <ErrorIcon/> { this.state.error }
-        </div>;
+        return <span>
+            <ErrorIcon style={{ verticalAlign: 'middle' }}/> { this.state.error }
+        </span>;
+    }
+
+    private renderLoading() {
+        var progressRatio = this.state.loadingTotal != null && this.state.loadingDone != null
+            ? Math.min(1, this.state.loadingDone / Math.max(1, this.state.loadingTotal)) * 100
+            : null;
+        return <span>
+            { progressRatio != null && (this.state.loadingTotal || 0) > 100
+                ? <span> Loading entries: {this.state.loadingDone} of {this.state.loadingTotal} </span>
+                : undefined
+            }
+            { progressRatio != null
+                ? <LinearProgress variant='determinate' value={progressRatio}/>
+                : <LinearProgress variant='indeterminate'/>
+            }
+        </span>;
     }
 
     private renderStories() {
