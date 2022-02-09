@@ -6,3 +6,6 @@
 * Added git diff cache for faster 2nd time loading
 * Added icon: books; instead of the default React icon
 * Corrected git diff parsing: file name with spaces
+
+# Git Stories v0.3
+* Redesigned output of the story plugin: two-level structure. Changeset -> Files
