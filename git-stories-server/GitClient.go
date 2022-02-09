@@ -79,6 +79,8 @@ func (gitClient *GitClient) ReadCommitDate(commitHash string) (time.Time, error)
 	return time.Unix(second, 0), nil
 }
 
+// TODO add function ReadCommitAuthor
+
 func (gitClient *GitClient) ReadDiffSummary(commitHash1, commitHash2 string) ([]git_stories_api.DiffSummaryRow, error) {
 	var outputText, runError = gitClient.Run([]string{"diff", "--numstat", commitHash1, commitHash2})
 	if runError != nil {
@@ -104,12 +106,12 @@ func (gitClient *GitClient) ReadDiffSummary(commitHash1, commitHash2 string) ([]
 	return rows, nil
 }
 
-func (gitClient *GitClient) ReadDetailedLog(lengthLimit int) ([]git_stories_api.DetailedLogEntryRow, error) {
+func (gitClient *GitClient) ReadDetailedLog(lengthLimit int) ([]git_stories_api.RepositoryLogEntry, error) {
 	var logEntries, readError = gitClient.ReadLog(lengthLimit)
 	if nil != readError {
 		return nil, readError
 	}
-	var rows []git_stories_api.DetailedLogEntryRow
+	var rows []git_stories_api.RepositoryLogEntry
 	for _, entry := range logEntries {
 		var row, e = gitClient.ReadDetailedLogEntryRow(entry)
 		if nil != e {
@@ -120,10 +122,10 @@ func (gitClient *GitClient) ReadDetailedLog(lengthLimit int) ([]git_stories_api.
 	return rows, nil
 }
 
-func (gitClient *GitClient) ReadDetailedLogEntryRow(logEntry LogEntryRow) (git_stories_api.DetailedLogEntryRow, error) {
+func (gitClient *GitClient) ReadDetailedLogEntryRow(logEntry LogEntryRow) (git_stories_api.RepositoryLogEntry, error) {
 	var commitDate, commitDateError = gitClient.ReadCommitDate(logEntry.CommitHash)
 	if nil != commitDateError {
-		return git_stories_api.DetailedLogEntryRow{}, commitDateError
+		return git_stories_api.RepositoryLogEntry{}, commitDateError
 	}
 	var parentHashes []string
 	if len(logEntry.ParentHashes) > 0 {
@@ -135,7 +137,7 @@ func (gitClient *GitClient) ReadDetailedLogEntryRow(logEntry LogEntryRow) (git_s
 	for _, parentHash := range parentHashes {
 		var diffSummary, diffSummaryError = gitClient.ReadDiffSummary(parentHash, logEntry.CommitHash)
 		if nil != diffSummaryError {
-			return git_stories_api.DetailedLogEntryRow{}, diffSummaryError
+			return git_stories_api.RepositoryLogEntry{}, diffSummaryError
 		}
 		var parentInfo = git_stories_api.ParentInfoEntry{
 			CommitHash:  parentHash,
@@ -143,7 +145,7 @@ func (gitClient *GitClient) ReadDetailedLogEntryRow(logEntry LogEntryRow) (git_s
 		}
 		parentInfos = append(parentInfos, parentInfo)
 	}
-	var row = git_stories_api.DetailedLogEntryRow{
+	var row = git_stories_api.RepositoryLogEntry{
 		CommitHash: logEntry.CommitHash,
 		Time:       commitDate,
 		Parents:    parentInfos,

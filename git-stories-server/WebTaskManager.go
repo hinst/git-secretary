@@ -7,10 +7,10 @@ import (
 )
 
 type WebTask struct {
-	Total        int                          `json:"total"`
-	Done         int                          `json:"done"`
-	Error        string                       `json:"error"`
-	StoryEntries []git_stories_api.StoryEntry `json:"storyEntries"`
+	Total        int                                   `json:"total"`
+	Done         int                                   `json:"done"`
+	Error        string                                `json:"error"`
+	StoryEntries []git_stories_api.StoryEntryChangeset `json:"storyEntries"`
 }
 
 func (task *WebTask) IsDone() bool {

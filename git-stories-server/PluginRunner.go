@@ -15,7 +15,7 @@ type PluginRunner struct {
 	PluginFilePath string
 }
 
-func (runner *PluginRunner) Run(rows git_stories_api.DetailedLogEntryRows) ([]git_stories_api.StoryEntry, error) {
+func (runner *PluginRunner) Run(rows git_stories_api.RepositoryLogEntries) ([]git_stories_api.StoryEntryChangeset, error) {
 	var rowsBytes, jsonWriteError = json.Marshal(rows)
 	if nil != jsonWriteError {
 		return nil, common.CreateException("Cannot to write json", jsonWriteError)
@@ -54,7 +54,7 @@ func (runner *PluginRunner) Run(rows git_stories_api.DetailedLogEntryRows) ([]gi
 	if nil != outputError {
 		return nil, common.CreateException("Cannot read output of the plug-in", outputError)
 	}
-	var storyEntries []git_stories_api.StoryEntry
+	var storyEntries []git_stories_api.StoryEntryChangeset
 	var jsonError = json.Unmarshal(outputData, &storyEntries)
 	if nil != jsonError {
 		return nil, common.CreateException("Cannot decode output of the plug-in as JSON", jsonError)
