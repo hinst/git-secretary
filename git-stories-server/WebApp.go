@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	git_stories_api "github.com/hinst/git-stories-api"
 	"github.com/hinst/go-common"
 	"github.com/pkg/browser"
 	bolt "go.etcd.io/bbolt"
@@ -172,6 +173,10 @@ func (me *WebApp) readStories(taskId uint, directory string, lengthLimit int) {
 	}
 	me.tasks.Update(taskId, func(task *WebTask) {
 		task.StoryEntries = storyEntries
+		if nil == task.StoryEntries {
+			// Avoid nil value because nil means that the task is not finished yet
+			task.StoryEntries = make([]git_stories_api.StoryEntryChangeset, 0)
+		}
 		if lengthLimit > 0 && len(task.StoryEntries) > lengthLimit {
 			task.StoryEntries = task.StoryEntries[0:lengthLimit]
 		}
@@ -188,8 +193,8 @@ func (me *WebApp) getTask(responseWriter http.ResponseWriter, request *http.Requ
 	var id64, idParseError = strconv.ParseUint(idString, 10, int(SizeOfUint))
 	if nil != idParseError {
 		responseWriter.WriteHeader(http.StatusBadRequest)
-		responseWriter.Write([]byte("Query parameter must be an unsigned integer: id; got: " + idString + "\n" +
-			idParseError.Error()))
+		responseWriter.Write([]byte("Query parameter must be an unsigned integer: id; got: " +
+			idString + "\n" + idParseError.Error()))
 		return
 	}
 	var id = uint(id64)
