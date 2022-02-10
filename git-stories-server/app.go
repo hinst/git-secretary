@@ -25,7 +25,6 @@ func main() {
 	var webApp WebApp
 	webApp.Create()
 	if autoOpenEnabled != nil {
-		log.Println(*autoOpenEnabled)
 		webApp.configuration.AutoOpenEnabled = *autoOpenEnabled
 	}
 	webApp.Start()
