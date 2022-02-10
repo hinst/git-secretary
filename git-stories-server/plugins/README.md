@@ -1,0 +1,1 @@
+Plugin files to be debugged in developer mode
