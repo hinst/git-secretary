@@ -1,23 +1,21 @@
 import { Component } from 'react';
 import { Common } from './Common';
-import { StoryEntry } from './StoryEntry';
-import lodash from 'lodash';
-import { getStartOfDay } from './dateTime';
+import { StoryEntryChangeset } from './StoryEntry';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
-import WarningIcon from '@mui/icons-material/Warning';
 import ErrorIcon from '@mui/icons-material/Error';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { replaceAll } from './string';
 import { Link, Navigate } from 'react-router-dom';
 import { WebTask } from './WebTask';
 import { LinearProgress } from '@mui/material';
+import { StoriesView } from './StoriesView';
 
 class Props {
     directory?: string;
 }
 
 class State {
-    stories: StoryEntry[] = [];
+    stories: StoryEntryChangeset[] = [];
     error?: string;
     taskId?: number;
     isLoading: boolean = false;
@@ -126,9 +124,9 @@ export class RepoHistoryViewer extends Component<Props, State> {
                 this.setState({ error: task.error, stories: [] });
                 this.stopStoriesLoading();
             } else if (task.storyEntries) {
-                const stories: StoryEntry[] = task.storyEntries;
+                const stories: StoryEntryChangeset[] = task.storyEntries;
                 for (let i = 0; i < stories.length; i++)
-                    stories[i] = Object.assign(new StoryEntry(), stories[i]);
+                    stories[i] = Object.assign(new StoryEntryChangeset(), stories[i]);
                 this.setState({ error: undefined, stories: stories });
                 this.stopStoriesLoading();
             } else {
@@ -164,45 +162,7 @@ export class RepoHistoryViewer extends Component<Props, State> {
     }
 
     private renderStories() {
-        const storyDays: StoryEntry[][] = Object.values(
-            lodash.groupBy(this.state.stories, (story: StoryEntry) => getStartOfDay(story.getTime()))
-        );
-        const isDayLimitExceeded = storyDays.length > RepoHistoryViewer.DAY_LIMIT;
-        const totalStoryDays = storyDays.length;
-        if (isDayLimitExceeded) {
-            storyDays.splice(RepoHistoryViewer.DAY_LIMIT);
-        }
-        return <div>
-            { storyDays.map(storyDay => this.renderStoryDay(storyDay)) }
-            { isDayLimitExceeded
-                ? <div>
-                    <WarningIcon style={{ verticalAlign: 'middle' }} />&nbsp;
-                    A limited number of days is displayed:
-                    {RepoHistoryViewer.DAY_LIMIT} of {totalStoryDays}
-                </div>
-                : undefined
-            }
-        </div>;
-    }
-
-    private renderStoryEntry(entry: StoryEntry) {
-        const key = entry.CommitHash + '_' + entry.SourceFilePath;
-        return <li key={key}>
-            {entry.Description}
-        </li>;
-    }
-
-    private renderStoryDay(entries: StoryEntry[]) {
-        const key = getStartOfDay(entries[0].getTime()).toUTCString();
-        const dayTitle = getStartOfDay(entries[0].getTime()).toLocaleDateString();
-        return <div className='w3-panel w3-leftbar' style={{paddingLeft: 0}} key={key}>
-            <div style={{ marginLeft: '8px' }}>
-                {dayTitle}
-            </div>
-            <ul>
-                { entries.map(entry => this.renderStoryEntry(entry)) }
-            </ul>
-        </div>;
+        return <StoriesView entries={this.state.stories}/>
     }
 
     private get repositoryName(): string {
