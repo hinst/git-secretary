@@ -3,7 +3,7 @@ module git-stories-server
 go 1.17
 
 require (
-	github.com/hinst/git-stories-api v0.1.4
+	github.com/hinst/git-stories-api v0.1.5
 	github.com/hinst/go-common v0.0.0-20220110203238-3492ed09d097
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 )
