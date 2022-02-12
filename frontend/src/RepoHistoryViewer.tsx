@@ -1,9 +1,10 @@
-import { Component } from 'react';
+import { Component, ReactNode } from 'react';
 import { Common } from './Common';
 import { StoryEntryChangeset } from './StoryEntry';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import ErrorIcon from '@mui/icons-material/Error';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
 import { replaceAll } from './string';
 import { Link, Navigate } from 'react-router-dom';
 import { WebTask } from './WebTask';
@@ -161,8 +162,21 @@ export class RepoHistoryViewer extends Component<Props, State> {
         </span>;
     }
 
-    private renderStories() {
-        return <StoriesView entries={this.state.stories}/>
+    private renderStories(): ReactNode {
+        return this.state.stories.length
+            ? <StoriesView entries={this.state.stories}/>
+            : <div className='w3-panel'>
+                <span>
+                    <DoNotDisturbIcon style={{ verticalAlign: 'middle' }}/>&nbsp;
+                    There are no entries to show. Likely causes are:
+                </span>
+                <ul style={{marginTop: 4}}>
+                    <li>The source repository has zero commits</li>
+                    <li>There is an error in the plug-in</li>
+                    <li>There is an error in git-stories-server</li>
+                    <li>An incomplete alpha version of plug-in is used</li>
+                </ul>
+            </div>;
     }
 
     private get repositoryName(): string {
