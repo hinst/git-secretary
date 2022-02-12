@@ -33,6 +33,10 @@ func (runner *PluginRunner) Run(rows git_stories_api.RepositoryLogEntries) ([]gi
 	if nil != pluginOutputError {
 		return nil, common.CreateException("Cannot open output of the plug-in", pluginOutputError)
 	}
+	var errorOutput, errorOutputError = command.StderrPipe()
+	if nil != errorOutputError {
+		return nil, common.CreateException("Cannot open stderr of the plug-in", errorOutputError)
+	}
 	var commandStartError = command.Start()
 	if nil != commandStartError {
 		return nil, common.CreateException("Cannot start command", commandStartError)
@@ -54,6 +58,11 @@ func (runner *PluginRunner) Run(rows git_stories_api.RepositoryLogEntries) ([]gi
 	if nil != outputError {
 		return nil, common.CreateException("Cannot read output of the plug-in", outputError)
 	}
+	var errorData, errorError = ioutil.ReadAll(bufio.NewReader(errorOutput))
+	if nil != errorError {
+		return nil, common.CreateException("Cannot read error output of the plug-in", errorError)
+	}
+	println(string(errorData))
 	var storyEntries []git_stories_api.StoryEntryChangeset
 	var jsonError = json.Unmarshal(outputData, &storyEntries)
 	if nil != jsonError {
