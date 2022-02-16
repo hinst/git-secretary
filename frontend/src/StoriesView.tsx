@@ -53,7 +53,7 @@ export class StoriesView extends Component<Props, State> {
         const key = changeset.commitHash;
         return <li key={key}>
             <ul>
-                { changeset.fileEntries.map(fileEntry => this.renderFileEntry(fileEntry)) }
+                { (changeset.fileEntries || []).map(fileEntry => this.renderFileEntry(fileEntry)) }
             </ul>
         </li>;
     }
