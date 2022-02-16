@@ -15,8 +15,8 @@ type PluginRunner struct {
 	PluginFilePath string
 }
 
-func (runner *PluginRunner) Run(rows git_stories_api.RepositoryLogEntries) ([]git_stories_api.StoryEntryChangeset, error) {
-	var rowsBytes, jsonWriteError = json.Marshal(rows)
+func (runner *PluginRunner) Run(request git_stories_api.StoriesRequest) ([]git_stories_api.StoryEntryChangeset, error) {
+	var rowsBytes, jsonWriteError = json.Marshal(request)
 	if nil != jsonWriteError {
 		return nil, common.CreateException("Cannot to write json", jsonWriteError)
 	}

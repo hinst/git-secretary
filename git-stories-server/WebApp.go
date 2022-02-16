@@ -124,11 +124,12 @@ func (me *WebApp) requireDirectoryArgument(responseWriter http.ResponseWriter, r
 }
 
 func (me *WebApp) getStoriesAsync(responseWriter http.ResponseWriter, request *http.Request) {
-	var directory = me.requireDirectoryArgument(responseWriter, request)
-	if len(directory) == 0 {
+	var requestObject ReadStoriesRequest
+	requestObject.Directory = me.requireDirectoryArgument(responseWriter, request)
+	if len(requestObject.Directory) == 0 {
 		return
 	}
-	var lengthLimit = 0
+	requestObject.TimeZone = request.URL.Query().Get("timeZone")
 	var lengthLimitText = request.URL.Query().Get("lengthLimit")
 	if len(lengthLimitText) > 0 {
 		var parsedLengthLimit, e = strconv.Atoi(lengthLimitText)
@@ -137,16 +138,16 @@ func (me *WebApp) getStoriesAsync(responseWriter http.ResponseWriter, request *h
 			responseWriter.Write([]byte("Unable to parse query argument lengthLimit as integer: \"" + lengthLimitText + "\""))
 			return
 		}
-		lengthLimit = parsedLengthLimit
+		requestObject.LengthLimit = parsedLengthLimit
 	}
 	var taskId = me.tasks.Add(&WebTask{})
 	responseWriter.WriteHeader(http.StatusOK)
 	responseWriter.Write([]byte(strconv.FormatUint(uint64(taskId), 10)))
-	go me.readStories(taskId, directory, lengthLimit)
+	go me.readStories(taskId, requestObject)
 }
 
-func (me *WebApp) readStories(taskId uint, directory string, lengthLimit int) {
-	var gitClient = (&CachedGitClient{}).Create(me.storage, directory)
+func (me *WebApp) readStories(taskId uint, request ReadStoriesRequest) {
+	var gitClient = (&CachedGitClient{}).Create(me.storage, request.Directory)
 	gitClient.SetProgressReceiver(func(total int, done int) {
 		me.tasks.Update(taskId, func(task *WebTask) {
 			task.Total = total
@@ -164,7 +165,10 @@ func (me *WebApp) readStories(taskId uint, directory string, lengthLimit int) {
 	common.AssertError(getwdError)
 	var pluginFilePath = workingDirectory + "/" + me.configuration.Plugin
 	var pluginRunner = PluginRunner{PluginFilePath: pluginFilePath}
-	var storyEntries, pluginError = pluginRunner.Run(rows)
+	var storyEntries, pluginError = pluginRunner.Run(git_stories_api.StoriesRequest{
+		LogEntries: rows,
+		TimeZone:   "",
+	})
 	if nil != pluginError {
 		me.tasks.Update(taskId, func(task *WebTask) {
 			task.Error = pluginError.Error()
@@ -177,8 +181,8 @@ func (me *WebApp) readStories(taskId uint, directory string, lengthLimit int) {
 			// Avoid nil value because nil means that the task is not finished yet
 			task.StoryEntries = make([]git_stories_api.StoryEntryChangeset, 0)
 		}
-		if lengthLimit > 0 && len(task.StoryEntries) > lengthLimit {
-			task.StoryEntries = task.StoryEntries[0:lengthLimit]
+		if request.LengthLimit > 0 && len(task.StoryEntries) > request.LengthLimit {
+			task.StoryEntries = task.StoryEntries[0:request.LengthLimit]
 		}
 	})
 }
