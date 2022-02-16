@@ -11,3 +11,4 @@
 * Redesigned output of the story plugin: two-level structure. Changeset -> Files
 * Refactored UI: Reduce size of RepoHistoryViewer. Add component: StoriesView
 * Show stderr output from plugin
+* Ground work for timezone
