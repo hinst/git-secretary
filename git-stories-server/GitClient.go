@@ -150,8 +150,8 @@ func (gitClient *GitClient) ReadDetailedLogEntryRow(logEntry LogEntryRow) (row g
 			return row, diffSummaryError
 		}
 		var parentInfo = git_stories_api.ParentInfoEntry{
-			CommitHash:  parentHash,
-			DiffSummary: diffSummary,
+			CommitHash: parentHash,
+			DiffRows:   diffSummary,
 		}
 		parentInfos = append(parentInfos, parentInfo)
 	}
