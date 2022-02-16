@@ -167,7 +167,7 @@ func (me *WebApp) readStories(taskId uint, request ReadStoriesRequest) {
 	var pluginRunner = PluginRunner{PluginFilePath: pluginFilePath}
 	var storyEntries, pluginError = pluginRunner.Run(git_stories_api.StoriesRequest{
 		LogEntries: rows,
-		TimeZone:   "",
+		TimeZone:   request.TimeZone,
 	})
 	if nil != pluginError {
 		me.tasks.Update(taskId, func(task *WebTask) {

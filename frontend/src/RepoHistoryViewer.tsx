@@ -90,7 +90,8 @@ export class RepoHistoryViewer extends Component<Props, State> {
         this.setState({ isLoading: true, error: undefined });
         const url = Common.apiUrl + '/stories' +
             '?directory=' + encodeURIComponent(this.props.directory || '') +
-            '&lengthLimit=' + encodeURIComponent(RepoHistoryViewer.DAY_LIMIT * 10);
+            '&lengthLimit=' + encodeURIComponent(RepoHistoryViewer.DAY_LIMIT * 10) +
+            '&timeZone=' + encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone);
         try {
             const response = await fetch(url);
             if (response.ok) {
