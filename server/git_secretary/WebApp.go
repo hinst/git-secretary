@@ -12,13 +12,11 @@ import (
 	git_stories_api "github.com/hinst/git-stories-api"
 	"github.com/hinst/go-common"
 	"github.com/pkg/browser"
-	bolt "go.etcd.io/bbolt"
 )
 
 type WebApp struct {
 	Configuration Configuration
-	Storage       Storage
-	storage       *bolt.DB
+	Storage       *Storage
 	tasks         *WebTaskManager
 }
 
@@ -27,15 +25,7 @@ const FILE_PERMISSION_OWNER_READ_WRITE = 0600
 func (me *WebApp) Create() {
 	me.Configuration.SetDefault()
 	me.loadConfiguration()
-
-	me.Storage.Create()
-	var dbOptions = *bolt.DefaultOptions
-	dbOptions.Timeout = 1 * time.Second
-	dbOptions.ReadOnly = false
-	var storage, e = bolt.Open("./storage.bolt", FILE_PERMISSION_OWNER_READ_WRITE, &dbOptions)
-	common.AssertError(common.CreateExceptionIf("Unable to open storage file", e))
-	me.storage = storage
-
+	me.Storage = (&Storage{}).Create()
 	me.tasks = (&WebTaskManager{}).Create()
 }
 
@@ -149,7 +139,7 @@ func (me *WebApp) getStoriesAsync(responseWriter http.ResponseWriter, request *h
 }
 
 func (me *WebApp) readStories(taskId uint, request ReadStoriesRequest) {
-	var gitClient = (&CachedGitClient{}).Create(me.storage, request.Directory)
+	var gitClient = (&CachedGitClient{}).Create(me.Storage, request.Directory)
 	gitClient.SetProgressReceiver(func(total int, done int) {
 		me.tasks.Update(taskId, func(task *WebTask) {
 			task.Total = total

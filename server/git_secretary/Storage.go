@@ -11,14 +11,15 @@ import (
 type Storage struct {
 	RepositoryLogEntriesBucketName      string
 	RepositoryLogEntriesBucketNameBytes []byte
-	FilePath                            string
-	db                                  *bolt.DB
+
+	FilePath string
+	db       *bolt.DB
 }
 
 func (me *Storage) Create() *Storage {
-	me.FilePath = common.ExecutableFileDirectory + "/storage.bolt"
 	me.RepositoryLogEntriesBucketName = "RepositoryLogEntries"
 	me.RepositoryLogEntriesBucketNameBytes = []byte(me.RepositoryLogEntriesBucketName)
+	me.FilePath = common.ExecutableFileDirectory + "/storage.bolt"
 
 	var dbOptions = *bolt.DefaultOptions
 	dbOptions.Timeout = 1
@@ -29,12 +30,13 @@ func (me *Storage) Create() *Storage {
 	return me
 }
 
-func (me *Storage) ReadRepositoryLogEntry(commitHash string) (result *git_stories_api.RepositoryLogEntry) {
-	var e = me.db.View(func(transaction *bolt.Tx) error {
+func (me *Storage) ReadRepositoryLogEntry(commitHash string) (result *git_stories_api.RepositoryLogEntry, e error) {
+	e = me.db.View(func(transaction *bolt.Tx) error {
 		var bucket = transaction.Bucket(me.RepositoryLogEntriesBucketNameBytes)
 		if bucket != nil {
 			var cachedRowBytes = bucket.Get([]byte(commitHash))
 			if cachedRowBytes != nil {
+				result = &git_stories_api.RepositoryLogEntry{}
 				var jsonError = json.Unmarshal(cachedRowBytes, result)
 				if nil != jsonError {
 					return jsonError
@@ -43,8 +45,25 @@ func (me *Storage) ReadRepositoryLogEntry(commitHash string) (result *git_storie
 		}
 		return nil
 	})
-	if e != nil {
-		panic(common.CreateException("Unable to read repository log entry", e))
-	}
 	return
+}
+
+func (me *Storage) WriteRepositoryLogEntries(entries []*git_stories_api.RepositoryLogEntry) error {
+	return me.db.Update(func(transaction *bolt.Tx) error {
+		var bucket, dbError = transaction.CreateBucketIfNotExists(me.RepositoryLogEntriesBucketNameBytes)
+		if nil != dbError {
+			return dbError
+		}
+		for _, row := range entries {
+			var rowBytes, jsonError = json.Marshal(row)
+			if nil != jsonError {
+				return jsonError
+			}
+			dbError = bucket.Put([]byte(row.CommitHash), rowBytes)
+			if nil != dbError {
+				return dbError
+			}
+		}
+		return nil
+	})
 }
