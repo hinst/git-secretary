@@ -1,4 +1,4 @@
-package main
+package git_secretary
 
 import (
 	"encoding/json"
@@ -16,7 +16,7 @@ import (
 )
 
 type WebApp struct {
-	configuration Configuration
+	Configuration Configuration
 	storage       *bolt.DB
 	tasks         *WebTaskManager
 }
@@ -24,7 +24,7 @@ type WebApp struct {
 const FILE_PERMISSION_OWNER_READ_WRITE = 0600
 
 func (me *WebApp) Create() {
-	me.configuration.SetDefault()
+	me.Configuration.SetDefault()
 	me.loadConfiguration()
 
 	var dbOptions = *bolt.DefaultOptions
@@ -38,14 +38,14 @@ func (me *WebApp) Create() {
 }
 
 func (me *WebApp) GetWebFilePath() string {
-	return me.configuration.WebPath + "/static-files"
+	return me.Configuration.WebPath + "/static-files"
 }
 
 func (me *WebApp) Start() {
 	var fileServer = http.FileServer(http.Dir("./frontend"))
 	var webFilePath = me.GetWebFilePath()
 	http.Handle(webFilePath+"/", http.StripPrefix(webFilePath+"/", fileServer))
-	var webApiPath = me.configuration.WebPath + "/api"
+	var webApiPath = me.Configuration.WebPath + "/api"
 	me.handle(webApiPath+"/repoHistory", me.getRepoHistory)
 	me.handle(webApiPath+"/commits", me.commits)
 	me.handle(webApiPath+"/fullLog", me.getFullLog)
@@ -59,13 +59,13 @@ func (me *WebApp) Start() {
 }
 
 func (me *WebApp) startListening() {
-	if me.configuration.PortNumber == 0 {
+	if me.Configuration.PortNumber == 0 {
 		log.Fatal("Error: Please provide PortNumber in configuration.json")
 	}
-	var portString = strconv.Itoa(me.configuration.PortNumber)
+	var portString = strconv.Itoa(me.Configuration.PortNumber)
 	var url = "http://localhost:" + portString + me.GetWebFilePath()
 	log.Println("Will listen at " + url)
-	if me.configuration.AutoOpenEnabled {
+	if me.Configuration.AutoOpenEnabled {
 		go func() {
 			time.Sleep(1 * time.Second)
 			browser.OpenURL(url)
@@ -79,7 +79,7 @@ func (me *WebApp) loadConfiguration() {
 	if nil != fileError {
 		panic(fileError)
 	}
-	var jsonError = json.Unmarshal(configuration, &me.configuration)
+	var jsonError = json.Unmarshal(configuration, &me.Configuration)
 	if nil != jsonError {
 		panic(jsonError)
 	}
@@ -163,7 +163,7 @@ func (me *WebApp) readStories(taskId uint, request ReadStoriesRequest) {
 	}
 	var workingDirectory, getwdError = os.Getwd()
 	common.AssertError(getwdError)
-	var pluginFilePath = workingDirectory + "/" + me.configuration.Plugin
+	var pluginFilePath = workingDirectory + "/" + me.Configuration.Plugin
 	var pluginRunner = PluginRunner{PluginFilePath: pluginFilePath}
 	var storyEntries, pluginError = pluginRunner.Run(git_stories_api.StoriesRequest{
 		LogEntries: rows,

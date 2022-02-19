@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"runtime/debug"
+
+	"git-secretary/git_secretary"
 )
 
 func main() {
@@ -22,10 +24,10 @@ func main() {
 			panic("Unable to change current directory to " + *workingDirectory)
 		}
 	}
-	var webApp WebApp
+	var webApp git_secretary.WebApp
 	webApp.Create()
 	if autoOpenEnabled != nil {
-		webApp.configuration.AutoOpenEnabled = *autoOpenEnabled
+		webApp.Configuration.AutoOpenEnabled = *autoOpenEnabled
 	}
 	webApp.Start()
 }
