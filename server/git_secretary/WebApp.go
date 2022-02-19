@@ -17,6 +17,7 @@ import (
 
 type WebApp struct {
 	Configuration Configuration
+	Storage       Storage
 	storage       *bolt.DB
 	tasks         *WebTaskManager
 }

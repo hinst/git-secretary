@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"runtime/debug"
@@ -11,7 +10,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Now starting...")
+	log.Println("STARTING")
 	debug.SetGCPercent(30)
 
 	var workingDirectory = flag.String("wd", "", "Working directory")

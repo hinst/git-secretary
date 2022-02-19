@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/hinst/git-stories-api v0.1.6
-	github.com/hinst/go-common v0.1.2
+	github.com/hinst/go-common v0.1.4
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 )
 
