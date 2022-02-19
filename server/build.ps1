@@ -1,4 +1,4 @@
 go build
 $succeeded = $?
-Write-Host "Build git-stories-server $succeeded"
+Write-Host "Build git-secretary $succeeded"
 return $succeeded

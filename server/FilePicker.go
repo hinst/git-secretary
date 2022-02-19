@@ -54,15 +54,15 @@ func (picker *FilePicker) GetFileList(responseWriter http.ResponseWriter, reques
 			})
 		}
 	}
-	var data, error = json.Marshal(fileInfos)
-	common.AssertWrapped(error, "error: write JSON")
+	var data, e = json.Marshal(fileInfos)
+	common.AssertError(common.CreateExceptionIf("error: write JSON", e))
 	responseWriter.Write(data)
 }
 
 func (picker *FilePicker) getDriveList() (drives []string) {
 	var command = exec.Command("wmic", "logicaldisk", "get", "deviceid")
 	var output, e = command.CombinedOutput()
-	common.AssertWrapped(e, "Unable to read list of logical drives")
+	common.AssertError(common.CreateExceptionIf("Unable to read list of logical drives", e))
 	var outputText = string(output)
 	var lines = strings.Split(outputText, "\n")
 	for i, line := range lines {

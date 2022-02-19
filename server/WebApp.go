@@ -31,7 +31,7 @@ func (me *WebApp) Create() {
 	dbOptions.Timeout = 1 * time.Second
 	dbOptions.ReadOnly = false
 	var storage, e = bolt.Open("./storage.bolt", FILE_PERMISSION_OWNER_READ_WRITE, &dbOptions)
-	common.AssertWrapped(e, "Unable to open storage file")
+	common.AssertError(common.CreateExceptionIf("Unable to open storage file", e))
 	me.storage = storage
 
 	me.tasks = (&WebTaskManager{}).Create()

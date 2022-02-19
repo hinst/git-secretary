@@ -1,7 +1,7 @@
 github.com/hinst/git-stories-api v0.1.6 h1:7OXRbId11CfDUKIs4i88TRlegS63ZZnHlMmlZyBvpws=
 github.com/hinst/git-stories-api v0.1.6/go.mod h1:vkA/l2Ljsy2hCAFQutI2OLI10pihY6fum5NSXDPmPC0=
-github.com/hinst/go-common v0.0.0-20220110203238-3492ed09d097 h1:MFLxN6ARr9fMpnlsuW54yeQMlD3qmgYnDlOYDTQUcoQ=
-github.com/hinst/go-common v0.0.0-20220110203238-3492ed09d097/go.mod h1:JjW/dKdYWVguG2Pl3X4lHn2p6FL8/OW73Ng87yM9r4g=
+github.com/hinst/go-common v0.1.1 h1:AkS2nsNEnzoDABD7dC60K2nkcWbIXd30nBxRKpDk6XU=
+github.com/hinst/go-common v0.1.1/go.mod h1:JjW/dKdYWVguG2Pl3X4lHn2p6FL8/OW73Ng87yM9r4g=
 github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 h1:KoWmjvw+nsYOo29YJK9vDA65RGE3NrOnUtO7a+RF9HU=
 github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8/go.mod h1:HKlIX3XHQyzLZPlr7++PzdhaXEj94dEiJgZDTsxEqUI=
 go.etcd.io/bbolt v1.3.6 h1:/ecaJf0sk1l4l6V4awd65v2C3ILy7MSj+s/x1ADCIMU=

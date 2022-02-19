@@ -174,7 +174,7 @@ export class RepoHistoryViewer extends Component<Props, State> {
                 <ul style={{marginTop: 4}}>
                     <li>The source repository has zero commits</li>
                     <li>There is an error in the plug-in</li>
-                    <li>There is an error in git-stories-server</li>
+                    <li>There is an error in git-secretary</li>
                     <li>An incomplete alpha version of plug-in is used</li>
                 </ul>
             </div>;
