@@ -19,5 +19,5 @@ func (me *Storage) Create() *Storage {
 }
 
 func (me *Storage) GetFilePath() string {
-	return common.GetExecutableDir() + "/storage.bolt"
+	return common.ExecutableFileDirectory + "/storage.bolt"
 }

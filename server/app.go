@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	log.Default().SetPrefix("GS ")
 	log.Println("STARTING")
 	debug.SetGCPercent(30)
 

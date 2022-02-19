@@ -28,6 +28,7 @@ func (me *WebApp) Create() {
 	me.Configuration.SetDefault()
 	me.loadConfiguration()
 
+	me.Storage.Create()
 	var dbOptions = *bolt.DefaultOptions
 	dbOptions.Timeout = 1 * time.Second
 	dbOptions.ReadOnly = false
