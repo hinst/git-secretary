@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// TODO rename RepositoryLogEntryHeader
 type LogEntryRow struct {
 	CommitHash   string   `json:"commitHash"`
 	ParentHashes []string `json:"parentHashes"`
