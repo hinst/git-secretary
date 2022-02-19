@@ -194,7 +194,7 @@ func (me *WebApp) getTask(responseWriter http.ResponseWriter, request *http.Requ
 		responseWriter.Write([]byte("Query parameter is required: id"))
 		return
 	}
-	var id64, idParseError = strconv.ParseUint(idString, 10, int(SizeOfUint))
+	var id64, idParseError = strconv.ParseUint(idString, 10, int(common.SizeOfUint))
 	if nil != idParseError {
 		responseWriter.WriteHeader(http.StatusBadRequest)
 		responseWriter.Write([]byte("Query parameter must be an unsigned integer: id; got: " +
