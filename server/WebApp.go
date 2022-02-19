@@ -28,7 +28,7 @@ func (me *WebApp) Create() {
 	me.loadConfiguration()
 
 	var dbOptions = *bolt.DefaultOptions
-	dbOptions.Timeout = 1
+	dbOptions.Timeout = 1 * time.Second
 	dbOptions.ReadOnly = false
 	var storage, e = bolt.Open("./storage.bolt", FILE_PERMISSION_OWNER_READ_WRITE, &dbOptions)
 	common.AssertWrapped(e, "Unable to open storage file")
