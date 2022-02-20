@@ -76,6 +76,7 @@ var ReadCommitInfoFormat = strings.Join(ReadCommitInfoItems, GitShowFormat.NewLi
 func (gitClient *GitClient) ReadCommitInfo(row *git_stories_api.RepositoryLogEntry) error {
 	var outputText, runError = gitClient.Run([]string{
 		"show",
+		"--all",
 		"--format=" + ReadCommitInfoFormat,
 		"--quiet",
 		row.CommitHash,

@@ -5,11 +5,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
-	git_stories_api "github.com/hinst/git-stories-api"
 	"github.com/hinst/go-common"
 	"github.com/pkg/browser"
 )
@@ -41,7 +39,7 @@ func (me *WebApp) Start() {
 	me.handle(webApiPath+"/repoHistory", me.getRepoHistory)
 	me.handle(webApiPath+"/commits", me.commits)
 	me.handle(webApiPath+"/fullLog", me.getFullLog)
-	me.handle(webApiPath+"/stories", me.getStoriesAsync)
+	me.handle(webApiPath+"/report", me.getReportAsync)
 	me.handle(webApiPath+"/task", me.getTask)
 
 	var filePicker = FilePicker{WebPath: webApiPath}
@@ -115,8 +113,8 @@ func (me *WebApp) requireDirectoryArgument(responseWriter http.ResponseWriter, r
 	return
 }
 
-func (me *WebApp) getStoriesAsync(responseWriter http.ResponseWriter, request *http.Request) {
-	var requestObject ReadStoriesRequest
+func (me *WebApp) getReportAsync(responseWriter http.ResponseWriter, request *http.Request) {
+	var requestObject ReadReportRequest
 	requestObject.Directory = me.requireDirectoryArgument(responseWriter, request)
 	if len(requestObject.Directory) == 0 {
 		return
@@ -135,48 +133,21 @@ func (me *WebApp) getStoriesAsync(responseWriter http.ResponseWriter, request *h
 	var taskId = me.tasks.Add(&WebTask{})
 	responseWriter.WriteHeader(http.StatusOK)
 	responseWriter.Write([]byte(strconv.FormatUint(uint64(taskId), 10)))
-	go me.readStories(taskId, requestObject)
+	go me.readReport(taskId, requestObject)
 }
 
-func (me *WebApp) readStories(taskId uint, request ReadStoriesRequest) {
-	var gitClient = (&CachedGitClient{}).Create(me.Storage, request.Directory)
-	gitClient.SetProgressReceiver(func(total int, done int) {
-		me.tasks.Update(taskId, func(task *WebTask) {
-			task.Total = total
-			task.Done = done
-		})
-	})
-	var rows, gitError = gitClient.ReadDetailedLog(0)
-	if nil != gitError {
-		me.tasks.Update(taskId, func(task *WebTask) {
-			task.Error = gitError.Error()
-		})
-		return
+func (me *WebApp) readReport(taskId uint, request ReadReportRequest) {
+	var reportGenerator = ReportGenerator{
+		Storage:       me.Storage,
+		Configuration: &me.Configuration,
+		Request:       request,
+		Update: func(updatedTask *WebTask) {
+			me.tasks.Update(taskId, func(task *WebTask) {
+				*task = *updatedTask
+			})
+		},
 	}
-	var workingDirectory, getwdError = os.Getwd()
-	common.AssertError(getwdError)
-	var pluginFilePath = workingDirectory + "/" + me.Configuration.Plugin
-	var pluginRunner = PluginRunner{PluginFilePath: pluginFilePath}
-	var storyEntries, pluginError = pluginRunner.Run(git_stories_api.StoriesRequest{
-		LogEntries: rows,
-		TimeZone:   request.TimeZone,
-	})
-	if nil != pluginError {
-		me.tasks.Update(taskId, func(task *WebTask) {
-			task.Error = pluginError.Error()
-		})
-		return
-	}
-	me.tasks.Update(taskId, func(task *WebTask) {
-		task.StoryEntries = storyEntries
-		if nil == task.StoryEntries {
-			// Avoid nil value because nil means that the task is not finished yet
-			task.StoryEntries = make([]git_stories_api.StoryEntryChangeset, 0)
-		}
-		if request.LengthLimit > 0 && len(task.StoryEntries) > request.LengthLimit {
-			task.StoryEntries = task.StoryEntries[0:request.LengthLimit]
-		}
-	})
+	reportGenerator.Generate()
 }
 
 func (me *WebApp) getTask(responseWriter http.ResponseWriter, request *http.Request) {

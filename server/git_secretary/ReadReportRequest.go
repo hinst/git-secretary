@@ -1,6 +1,6 @@
 package git_secretary
 
-type ReadStoriesRequest struct {
+type ReadReportRequest struct {
 	Directory   string
 	LengthLimit int
 	TimeZone    string

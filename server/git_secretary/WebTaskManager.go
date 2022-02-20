@@ -9,9 +9,12 @@ import (
 type WebTask struct {
 	Total        int                                   `json:"total"`
 	Done         int                                   `json:"done"`
+	ProgressInfo string                                `json:"progressInfo"`
 	Error        string                                `json:"error"`
 	StoryEntries []git_stories_api.StoryEntryChangeset `json:"storyEntries"`
 }
+
+type WebTaskUpdateFunc = func(task *WebTask)
 
 func (task *WebTask) IsDone() bool {
 	return task.StoryEntries != nil || len(task.Error) > 0
@@ -38,7 +41,7 @@ func (manager *WebTaskManager) Add(task *WebTask) uint {
 	return manager.counter
 }
 
-func (manager *WebTaskManager) Update(id uint, update func(task *WebTask)) {
+func (manager *WebTaskManager) Update(id uint, update WebTaskUpdateFunc) {
 	manager.locker.Lock()
 	defer manager.locker.Unlock()
 

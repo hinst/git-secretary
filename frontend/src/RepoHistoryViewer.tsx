@@ -16,7 +16,7 @@ class Props {
 }
 
 class State {
-    stories: StoryEntryChangeset[] = [];
+    stories?: StoryEntryChangeset[];
     error?: string;
     taskId?: number;
     isLoading: boolean = false;
@@ -88,7 +88,7 @@ export class RepoHistoryViewer extends Component<Props, State> {
 
     private async receiveLoadClick() {
         this.setState({ isLoading: true, error: undefined });
-        const url = Common.apiUrl + '/stories' +
+        const url = Common.apiUrl + '/report' +
             '?directory=' + encodeURIComponent(this.props.directory || '') +
             '&lengthLimit=' + encodeURIComponent(RepoHistoryViewer.DAY_LIMIT * 10) +
             '&timeZone=' + encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -164,7 +164,7 @@ export class RepoHistoryViewer extends Component<Props, State> {
     }
 
     private renderStories(): ReactNode {
-        return this.state.stories.length
+        return this.state.stories?.length
             ? <StoriesView entries={this.state.stories}/>
             : <div className='w3-panel'>
                 <span>
