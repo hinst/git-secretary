@@ -53,13 +53,13 @@ export class StoriesView extends Component<Props, State> {
         const key = changeset.commitHash;
         return <li key={key}>
             <ul>
-                { (changeset.fileEntries || []).map(fileEntry => this.renderFileEntry(fileEntry)) }
+                { (changeset.fileEntries || []).map((fileEntry, index) => this.renderFileEntry(index, fileEntry)) }
             </ul>
         </li>;
     }
 
-    private renderFileEntry(fileEntry: StoryEntryFileChange): ReactNode {
-        return <li>
+    private renderFileEntry(index: number, fileEntry: StoryEntryFileChange): ReactNode {
+        return <li key={index}>
             {fileEntry.description}
         </li>;
     }
