@@ -7,9 +7,9 @@ import (
 )
 
 type WebTask struct {
+	Activity     string                                `json:"activity"`
 	Total        int                                   `json:"total"`
 	Done         int                                   `json:"done"`
-	ProgressInfo string                                `json:"progressInfo"`
 	Error        string                                `json:"error"`
 	StoryEntries []git_stories_api.StoryEntryChangeset `json:"storyEntries"`
 }
