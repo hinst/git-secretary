@@ -42,7 +42,7 @@ type cachedGitClient_DetailedLogReader struct {
 	storage         *Storage
 	gitClient       *GitClient
 	receiveProgress CachedGitClientReceiveProgressFunction
-	allLogEntries   LogEntryRows
+	allLogEntries   RepositoryLogEntryHeaders
 	entries         []*git_stories_api.RepositoryLogEntry
 	newEntries      []*git_stories_api.RepositoryLogEntry
 }
@@ -57,7 +57,7 @@ func (reader *cachedGitClient_DetailedLogReader) Create(storage *Storage, gitCli
 	return reader
 }
 
-func (reader *cachedGitClient_DetailedLogReader) Load(logEntries LogEntryRows) error {
+func (reader *cachedGitClient_DetailedLogReader) Load(logEntries RepositoryLogEntryHeaders) error {
 	reader.allLogEntries = logEntries
 	var logEntryGroups = logEntries.GetPortions(CACHED_GIT_CLIENT_PAGE_SIZE)
 	for groupIndex, logEntries := range logEntryGroups {
@@ -74,7 +74,7 @@ func (reader *cachedGitClient_DetailedLogReader) Load(logEntries LogEntryRows) e
 	return nil
 }
 
-func (reader *cachedGitClient_DetailedLogReader) loadRows(groupIndex int, logEntries LogEntryRows) error {
+func (reader *cachedGitClient_DetailedLogReader) loadRows(groupIndex int, logEntries RepositoryLogEntryHeaders) error {
 	for entryIndex, entry := range logEntries {
 		var logEntry, e = reader.storage.ReadRepositoryLogEntry(entry.CommitHash)
 		if e != nil {

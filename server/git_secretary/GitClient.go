@@ -39,7 +39,7 @@ func (gitClient *GitClient) Run(args []string) (string, error) {
 	}
 }
 
-func (gitClient *GitClient) ReadLog(lengthLimit int) ([]LogEntryRow, error) {
+func (gitClient *GitClient) ReadLog(lengthLimit int) ([]RepositoryLogEntryHeader, error) {
 	var args = []string{"log", "--format=\"%H %P\""}
 	if lengthLimit > 0 {
 		args = append(args, "-n", strconv.Itoa(lengthLimit))
@@ -50,13 +50,13 @@ func (gitClient *GitClient) ReadLog(lengthLimit int) ([]LogEntryRow, error) {
 	var outputText, e = gitClient.Run(args)
 	if e == nil {
 		var lines = strings.Split(outputText, "\n")
-		var rows []LogEntryRow
+		var rows []RepositoryLogEntryHeader
 		for i := 0; i < len(lines); i++ {
 			var line = lines[i]
 			line = strings.Trim(line, "\"")
 			line = strings.TrimSpace(line)
 			if len(line) > 0 {
-				var logEntryRow LogEntryRow
+				var logEntryRow RepositoryLogEntryHeader
 				logEntryRow.ParseGitLine(line)
 				rows = append(rows, logEntryRow)
 			}
@@ -137,7 +137,7 @@ func (gitClient *GitClient) ReadDetailedLog(lengthLimit int) ([]git_stories_api.
 	return rows, nil
 }
 
-func (gitClient *GitClient) ReadDetailedLogEntryRow(logEntry LogEntryRow) (row git_stories_api.RepositoryLogEntry, e error) {
+func (gitClient *GitClient) ReadDetailedLogEntryRow(logEntry RepositoryLogEntryHeader) (row git_stories_api.RepositoryLogEntry, e error) {
 	var parentHashes []string
 	if len(logEntry.ParentHashes) > 0 {
 		parentHashes = logEntry.ParentHashes

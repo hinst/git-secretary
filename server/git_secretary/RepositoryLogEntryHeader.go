@@ -5,19 +5,18 @@ import (
 	"strings"
 )
 
-// TODO rename RepositoryLogEntryHeader
-type LogEntryRow struct {
+type RepositoryLogEntryHeader struct {
 	CommitHash   string   `json:"commitHash"`
 	ParentHashes []string `json:"parentHashes"`
 }
 
-var _ fmt.Stringer = &LogEntryRow{}
+var _ fmt.Stringer = &RepositoryLogEntryHeader{}
 
-func (row *LogEntryRow) String() string {
+func (row *RepositoryLogEntryHeader) String() string {
 	return row.CommitHash + " <- " + strings.Join(row.ParentHashes, ",")
 }
 
-func (row *LogEntryRow) ParseGitLine(line string) {
+func (row *RepositoryLogEntryHeader) ParseGitLine(line string) {
 	var parts = strings.Split(line, " ")
 	row.CommitHash = parts[0]
 	row.ParentHashes = nil
@@ -26,9 +25,9 @@ func (row *LogEntryRow) ParseGitLine(line string) {
 	}
 }
 
-type LogEntryRows []LogEntryRow
+type RepositoryLogEntryHeaders []RepositoryLogEntryHeader
 
-func (rows LogEntryRows) GetPortions(portionSize int) (portions []LogEntryRows) {
+func (rows RepositoryLogEntryHeaders) GetPortions(portionSize int) (portions []RepositoryLogEntryHeaders) {
 	for _, row := range rows {
 		if len(portions) == 0 || len(portions[len(portions)-1]) >= portionSize {
 			portions = append(portions, nil)
