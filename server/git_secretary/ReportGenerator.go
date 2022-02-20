@@ -59,35 +59,38 @@ func (me *ReportGenerator) buildReport(repositoryLogEntries git_stories_api.Repo
 	var reportByDate map[int]*ReportEntry = make(map[int]*ReportEntry)
 	for _, entry := range repositoryLogEntries {
 		var entryTime = entry.Time.In(timeZone)
-		var year, month, day = entryTime.Date()
-		var date = GetDateHash(year, month, day)
-		var report = reportByDate[date]
-		if nil == report {
-			report = &ReportEntry{Time: time.Date(year, month, day, 0, 0, 0, 0, timeZone)}
-		}
 		var isMerge = len(entry.Parents) > 1
+		var report = me.getOrCreate(reportByDate, entryTime)
+
+		var activity ReportActivityEntry
+		if isMerge {
+			// I assume that normally people do only a little work for a merge commit
+			// Therefore merges are not included into the usual activity
+			activity.Points = 1
+		} else {
+			activity.readRepositoryLogEntry(entry)
+		}
 		var entryReport = &ReportEntry{
 			Time:   entryTime,
 			Period: time.Hour * 24,
+			Authors: map[string]ReportActivityEntry{
+				entry.AuthorName: activity,
+			},
 		}
-		entryReport.Activity.Points = 1
-		// I assume that normally people do only a little work for a merge commit
-		// Therefore the user gets only 1 activity point for a merge
-		if !isMerge {
-			me.addActivity(&entryReport.Activity, entry)
-		}
+		report.Aggregate(entryReport)
 	}
 	return
 }
 
-func (me *ReportGenerator) addActivity(activity *ReportActivityEntry, source *git_stories_api.RepositoryLogEntry) {
-	activity.ChangesetCount += 1
-	for _, parent := range source.Parents {
-		activity.ChangedFileCount += len(parent.DiffRows)
-		for _, diff := range parent.DiffRows {
-			activity.ChangedFileCount += 1
-			activity.InsertionCount += MaxOfTwoInts(0, diff.InsertionCount)
-			activity.DeletionCount += MaxOfTwoInts(0, diff.DeletionCount)
+func (me *ReportGenerator) getOrCreate(reportByDate map[int]*ReportEntry, entryTime time.Time) (report *ReportEntry) {
+	var year, month, day = entryTime.Date()
+	var dateHash = GetDateHash(year, month, day)
+	report = reportByDate[dateHash]
+	if nil == report {
+		report = &ReportEntry{
+			Time: time.Date(year, month, day, 0, 0, 0, 0, entryTime.Location()),
 		}
+		reportByDate[dateHash] = report
 	}
+	return
 }
