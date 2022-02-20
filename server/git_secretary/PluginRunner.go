@@ -12,7 +12,7 @@ import (
 )
 
 type PluginRunner struct {
-	PluginFilePath string
+	FilePath string
 }
 
 func (runner *PluginRunner) Run(request git_stories_api.StoriesRequest) ([]git_stories_api.StoryEntryChangeset, error) {
@@ -20,7 +20,7 @@ func (runner *PluginRunner) Run(request git_stories_api.StoriesRequest) ([]git_s
 	if nil != jsonWriteError {
 		return nil, common.CreateException("Cannot to write json", jsonWriteError)
 	}
-	var pluginFilePath = runner.PluginFilePath
+	var pluginFilePath = runner.FilePath
 	if CheckWindows() && !strings.HasSuffix(pluginFilePath, WINDOWS_EXECUTABLE_FILE_EXTENSION) {
 		pluginFilePath += WINDOWS_EXECUTABLE_FILE_EXTENSION
 	}

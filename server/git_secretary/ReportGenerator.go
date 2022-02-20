@@ -27,7 +27,7 @@ func (me *ReportGenerator) Generate() {
 	var workingDirectory, getwdError = os.Getwd()
 	common.AssertError(getwdError)
 	var pluginFilePath = workingDirectory + "/" + me.Configuration.Plugin
-	var pluginRunner = PluginRunner{PluginFilePath: pluginFilePath}
+	var pluginRunner = PluginRunner{FilePath: pluginFilePath}
 	var storyEntries, pluginError = pluginRunner.Run(git_stories_api.StoriesRequest{
 		LogEntries: rows,
 		TimeZone:   me.Request.TimeZone,
