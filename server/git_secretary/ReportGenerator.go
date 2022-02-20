@@ -68,13 +68,13 @@ func (me *ReportGenerator) buildReport(repositoryLogEntries git_stories_api.Repo
 			// Therefore merges are not included into the usual activity
 			activity.Points = 1
 		} else {
-			activity.readRepositoryLogEntry(entry)
+			activity.ReadRepositoryLogEntry(entry)
 		}
 		var entryReport = &ReportEntry{
 			Time:   entryTime,
 			Period: time.Hour * 24,
-			Authors: map[string]ReportActivityEntry{
-				entry.AuthorName: activity,
+			Authors: map[string]*ReportActivityEntry{
+				entry.AuthorName: &activity,
 			},
 		}
 		report.Aggregate(entryReport)
