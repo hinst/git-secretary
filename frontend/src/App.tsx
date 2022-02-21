@@ -34,7 +34,7 @@ class App extends Component<Props, State> {
                     style={{marginBottom: 4, position: 'sticky', top: 0}}
                 >
                     <a href={Common.baseUrl + '/'} className="w3-bar-item w3-black w3-btn">
-                        GIT-STORIES
+                        GIT-SECRETARY
                     </a>
                 </div>
                 { this.state.goTo ? <Navigate to={this.state.goTo} /> : undefined }
