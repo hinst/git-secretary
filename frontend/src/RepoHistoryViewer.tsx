@@ -1,6 +1,5 @@
 import { Component, ReactNode } from 'react';
 import { Common } from './Common';
-import { StoryEntryChangeset } from './StoryEntry';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import ErrorIcon from '@mui/icons-material/Error';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -9,14 +8,15 @@ import { replaceAll } from './string';
 import { Link, Navigate } from 'react-router-dom';
 import { WebTask } from './WebTask';
 import { LinearProgress } from '@mui/material';
-import { StoriesView } from './StoriesView';
+import { ActivityReportGroup } from './ActivityReportGroup';
+import { ActivityReportsView } from './ActivityReportsView';
 
 class Props {
     directory?: string;
 }
 
 class State {
-    stories?: StoryEntryChangeset[];
+    activityReportGroups?: ActivityReportGroup[];
     error?: string;
     taskId?: number;
     isLoading: boolean = false;
@@ -74,7 +74,7 @@ export class RepoHistoryViewer extends Component<Props, State> {
                 }
             </div>
             <div>
-                {this.state.stories != null
+                {this.state.activityReportGroups != null
                     ? this.renderStories()
                     : undefined
                 }
@@ -97,7 +97,7 @@ export class RepoHistoryViewer extends Component<Props, State> {
             if (response.ok) {
                 const taskId = parseInt(await response.text());
                 this.setState({ isLoading: true, taskId: taskId, error: undefined });
-                this.loadingTaskTimer = window.setTimeout(() => this.checkStoriesLoaded(), 500);
+                this.loadingTaskTimer = window.setTimeout(() => this.checkLoaded(), 500);
             } else {
                 const errorText = await response.text();
                 this.setState({ isLoading: false, taskId: undefined, error: errorText });
@@ -107,37 +107,37 @@ export class RepoHistoryViewer extends Component<Props, State> {
         }
     }
 
-    private stopStoriesLoading() {
+    private stopLoading() {
         if (this.loadingTaskTimer != null)
             window.clearInterval(this.loadingTaskTimer);
         this.loadingTaskTimer = undefined;
         this.setState({ taskId: undefined, isLoading: false});
     }
 
-    private async checkStoriesLoaded() {
+    private async checkLoaded() {
         this.loadingTaskTimer = undefined;
         if (!this.state.taskId)
-            return this.stopStoriesLoading();
+            return this.stopLoading();
         const url = Common.apiUrl + '/task?id=' + encodeURIComponent(this.state.taskId);
         const response = await fetch(url);
         if (response.ok) {
             const task: WebTask = await response.json();
             if (task.error?.length) {
-                this.setState({ error: task.error, stories: [] });
-                this.stopStoriesLoading();
-            } else if (task.storyEntries) {
-                const stories: StoryEntryChangeset[] = task.storyEntries;
-                for (let i = 0; i < stories.length; i++)
-                    stories[i] = Object.assign(new StoryEntryChangeset(), stories[i]);
-                this.setState({ error: undefined, stories: stories });
-                this.stopStoriesLoading();
+                this.setState({ error: task.error, activityReportGroups: [] });
+                this.stopLoading();
+            } else if (task.activityReportGroups) {
+                const activityReportGroups: ActivityReportGroup[] = task.activityReportGroups;
+                for (let i = 0; i < activityReportGroups.length; i++)
+                    activityReportGroups[i] = Object.assign(new ActivityReportGroup(), activityReportGroups[i]);
+                this.setState({ error: undefined, activityReportGroups: activityReportGroups });
+                this.stopLoading();
             } else {
                 this.setState({ loadingTotal: task.total, loadingDone: task.done });
-                this.loadingTaskTimer = window.setTimeout(() => this.checkStoriesLoaded(), 500);
+                this.loadingTaskTimer = window.setTimeout(() => this.checkLoaded(), 500);
             }
         } else {
-            this.setState({ error: await response.text(), stories: [] });
-            this.stopStoriesLoading();
+            this.setState({ error: await response.text(), activityReportGroups: [] });
+            this.stopLoading();
         }
     }
 
@@ -164,8 +164,8 @@ export class RepoHistoryViewer extends Component<Props, State> {
     }
 
     private renderStories(): ReactNode {
-        return this.state.stories?.length
-            ? <StoriesView entries={this.state.stories}/>
+        return this.state.activityReportGroups?.length
+            ? <ActivityReportsView activityReportGroups={this.state.activityReportGroups}/>
             : <div className='w3-panel'>
                 <span>
                     <DoNotDisturbIcon style={{ verticalAlign: 'middle' }}/>&nbsp;
