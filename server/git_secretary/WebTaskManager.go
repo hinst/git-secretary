@@ -2,22 +2,21 @@ package git_secretary
 
 import (
 	"sync"
-
-	git_stories_api "github.com/hinst/git-stories-api"
 )
 
 type WebTask struct {
-	Activity     string                                `json:"activity"`
-	Total        int                                   `json:"total"`
-	Done         int                                   `json:"done"`
-	Error        string                                `json:"error"`
-	StoryEntries []git_stories_api.StoryEntryChangeset `json:"storyEntries"`
+	Activity string `json:"activity"`
+	Total    int    `json:"total"`
+	Done     int    `json:"done"`
+	Error    string `json:"error"`
+
+	ActivityReportGroups ActivityReportGroups `json:"activityReportGroups"`
 }
 
 type WebTaskUpdateFunc = func(task *WebTask)
 
 func (task *WebTask) IsDone() bool {
-	return task.StoryEntries != nil || len(task.Error) > 0
+	return task.ActivityReportGroups != nil || len(task.Error) > 0
 }
 
 type WebTaskManager struct {

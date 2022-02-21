@@ -2,7 +2,7 @@ package git_secretary
 
 import git_stories_api "github.com/hinst/git-stories-api"
 
-type ReportActivityEntry struct {
+type ActivityReport struct {
 	Points           int `json:"points"`
 	ChangesetCount   int `json:"changesetCount"`
 	ChangedFileCount int `json:"changedFileCount"`
@@ -10,11 +10,11 @@ type ReportActivityEntry struct {
 	DeletionCount    int `json:"deletionCount"`
 }
 
-func (me *ReportActivityEntry) GetPoints() int {
+func (me *ActivityReport) GetPoints() int {
 	return me.ChangesetCount + me.ChangedFileCount + me.InsertionCount + me.DeletionCount
 }
 
-func (me *ReportActivityEntry) ReadRepositoryLogEntry(source *git_stories_api.RepositoryLogEntry) {
+func (me *ActivityReport) ReadRepositoryLogEntry(source *git_stories_api.RepositoryLogEntry) {
 	me.ChangesetCount += 1
 	for _, parent := range source.Parents {
 		for _, diff := range parent.DiffRows {
@@ -26,10 +26,10 @@ func (me *ReportActivityEntry) ReadRepositoryLogEntry(source *git_stories_api.Re
 	me.Points = me.GetPoints()
 }
 
-func (me *ReportActivityEntry) Add(entry *ReportActivityEntry) {
-	me.Points += entry.Points
-	me.ChangesetCount += entry.ChangesetCount
-	me.ChangedFileCount += entry.ChangedFileCount
-	me.InsertionCount += entry.InsertionCount
-	me.DeletionCount += entry.DeletionCount
+func (me *ActivityReport) Add(activityReport *ActivityReport) {
+	me.Points += activityReport.Points
+	me.ChangesetCount += activityReport.ChangesetCount
+	me.ChangedFileCount += activityReport.ChangedFileCount
+	me.InsertionCount += activityReport.InsertionCount
+	me.DeletionCount += activityReport.DeletionCount
 }
