@@ -9,7 +9,7 @@ import { Link, Navigate } from 'react-router-dom';
 import { WebTask } from './WebTask';
 import { LinearProgress } from '@mui/material';
 import { ActivityReportGroup } from './ActivityReportGroup';
-import { ActivityReportsView } from './ActivityReportsView';
+import { ActivityReportGroupsView } from './ActivityReportGroupsView';
 
 class Props {
     directory?: string;
@@ -165,7 +165,7 @@ export class RepoHistoryViewer extends Component<Props, State> {
 
     private renderStories(): ReactNode {
         return this.state.activityReportGroups?.length
-            ? <ActivityReportsView activityReportGroups={this.state.activityReportGroups}/>
+            ? <ActivityReportGroupsView activityReportGroups={this.state.activityReportGroups}/>
             : <div className='w3-panel'>
                 <span>
                     <DoNotDisturbIcon style={{ verticalAlign: 'middle' }}/>&nbsp;
