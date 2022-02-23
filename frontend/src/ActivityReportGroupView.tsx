@@ -41,7 +41,7 @@ export class ActivityReportGroupView extends Component<Props, State> {
 
     constructor(props: Props) {
         super(props);
-        this.state = new State(props.isExpanded, props.isExpanded);
+        this.state = new State(props.isExpanded, true);
     }
 
     render(): ReactNode {
@@ -71,14 +71,10 @@ export class ActivityReportGroupView extends Component<Props, State> {
         this.setState({ isExpanded: !this.state.isExpanded });
     }
 
-    private toggleAuthorsExpanded() {
-        this.setState({ isAuthorsExpanded: !this.state.isAuthorsExpanded });
-    }
-
     private renderExpandedInfo() {
         const authorNames = Object.keys(this.props.activityReportGroup.authors).sort();
         return <div style={{marginLeft: 64}}>
-            {this.renderActivityReport(this.props.activityReportGroup.activity)}
+            {this.renderActivityReport(undefined, this.props.activityReportGroup.activity)}
             <div style={{marginTop: 6}}>
                 <button onClick={this.toggleAuthorsExpanded.bind(this)}
                     className="w3-btn w3-black"
@@ -90,20 +86,41 @@ export class ActivityReportGroupView extends Component<Props, State> {
                     }
                 </button> &nbsp;
                 { authorNames.length ? <span>Authors: [{authorNames.join(', ')}] </span> : undefined}
+                { this.state.isAuthorsExpanded ? this.renderAuthorList() : undefined }
             </div>
         </div>;
     }
 
-    private renderActivityReport(activityReport: ActivityReport) {
+    private toggleAuthorsExpanded() {
+        this.setState({ isAuthorsExpanded: !this.state.isAuthorsExpanded });
+    }
+
+    private renderActivityReport(authorName: string | undefined, activityReport: ActivityReport) {
         return <span>
-            <ul style={{listStyle: 'none', paddingLeft: 0, marginTop: 4, marginBottom: 4}}>
-                <li>{'{'}&nbsp;
-                    <ArticleIcon style={{verticalAlign: 'bottom', scale: '0.8'}}/>
-                    commits: {activityReport.changesetCount},
-                    + insertions: { activityReport.insertionCount },
-                    - deletions: { activityReport.deletionCount }
-                &nbsp;{'}'}</li>
-            </ul>
+            { authorName ? authorName + ' ' : undefined }
+            {'{'}&nbsp;
+                { authorName
+                    ? <span>∑ <b>{activityReport.points}</b>, </span>
+                    : undefined
+                }
+                <ArticleIcon style={{verticalAlign: 'bottom', scale: '0.8'}}/>
+                commits: <b>{activityReport.changesetCount}</b>,
+                +insertions: <b>{ activityReport.insertionCount }</b>,
+                -deletions: <b>{ activityReport.deletionCount }</b>
+            &nbsp;{'}'}
         </span>;
+    }
+
+    private renderAuthorList() {
+        const authorNames = Object.keys(this.props.activityReportGroup.authors).sort((aName, bName) => {
+            const aActivity = this.props.activityReportGroup.authors[aName];
+            const bActivity = this.props.activityReportGroup.authors[bName];
+            return bActivity.points - aActivity.points;
+        });
+        return <ul style={{marginLeft: 11, marginTop: 5, marginBottom: 5 }}>
+            { authorNames.map(name => <li key={name}>
+                { this.renderActivityReport(name, this.props.activityReportGroup.authors[name]) }
+            </li>) }
+        </ul>
     }
 }
