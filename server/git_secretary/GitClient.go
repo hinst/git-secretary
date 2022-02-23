@@ -40,7 +40,7 @@ func (gitClient *GitClient) Run(args []string) (string, error) {
 }
 
 func (gitClient *GitClient) ReadLog(lengthLimit int) ([]RepositoryLogEntryHeader, error) {
-	var args = []string{"log", "--format=\"%H %P\""}
+	var args = []string{"log", "--all", "--format=\"%H %P\""}
 	if lengthLimit > 0 {
 		args = append(args, "-n", strconv.Itoa(lengthLimit))
 	} else {
@@ -69,14 +69,13 @@ func (gitClient *GitClient) ReadLog(lengthLimit int) ([]RepositoryLogEntryHeader
 
 var ReadCommitInfoItems = []string{
 	GitShowFormat.AuthorTime,
-	GitShowFormat.AuthorName,
+	GitShowFormat.AuthorNameMapped,
 }
 var ReadCommitInfoFormat = strings.Join(ReadCommitInfoItems, GitShowFormat.NewLine)
 
 func (gitClient *GitClient) ReadCommitInfo(row *git_stories_api.RepositoryLogEntry) error {
 	var outputText, runError = gitClient.Run([]string{
 		"show",
-		"--all",
 		"--format=" + ReadCommitInfoFormat,
 		"--quiet",
 		row.CommitHash,
@@ -137,16 +136,16 @@ func (gitClient *GitClient) ReadDetailedLog(lengthLimit int) ([]git_stories_api.
 	return rows, nil
 }
 
-func (gitClient *GitClient) ReadDetailedLogEntryRow(logEntry RepositoryLogEntryHeader) (row git_stories_api.RepositoryLogEntry, e error) {
+func (gitClient *GitClient) ReadDetailedLogEntryRow(header RepositoryLogEntryHeader) (row git_stories_api.RepositoryLogEntry, e error) {
 	var parentHashes []string
-	if len(logEntry.ParentHashes) > 0 {
-		parentHashes = logEntry.ParentHashes
+	if len(header.ParentHashes) > 0 {
+		parentHashes = header.ParentHashes
 	} else {
 		parentHashes = []string{GitRootNodeHash}
 	}
 	var parentInfos []git_stories_api.ParentInfoEntry
 	for _, parentHash := range parentHashes {
-		var diffSummary, diffSummaryError = gitClient.ReadDiffSummary(parentHash, logEntry.CommitHash)
+		var diffSummary, diffSummaryError = gitClient.ReadDiffSummary(parentHash, header.CommitHash)
 		if nil != diffSummaryError {
 			return row, diffSummaryError
 		}
@@ -157,7 +156,7 @@ func (gitClient *GitClient) ReadDetailedLogEntryRow(logEntry RepositoryLogEntryH
 		parentInfos = append(parentInfos, parentInfo)
 	}
 	row = git_stories_api.RepositoryLogEntry{
-		CommitHash: logEntry.CommitHash,
+		CommitHash: header.CommitHash,
 		Parents:    parentInfos,
 	}
 	var readCommitInfoError = gitClient.ReadCommitInfo(&row)
