@@ -119,24 +119,37 @@ export class RepoHistoryViewer extends Component<Props, State> {
         if (!this.state.taskId)
             return this.stopLoading();
         const url = Common.apiUrl + '/task?id=' + encodeURIComponent(this.state.taskId);
-        const response = await fetch(url);
+        let response: Response;
+        try {
+            response = await fetch(url);
+        } catch (e) {
+            this.setState({ activityReportGroups: undefined, error: (e as any).message });
+            this.stopLoading();
+            return;
+        }
         if (response.ok) {
             const task: WebTask = await response.json();
             if (task.error?.length) {
-                this.setState({ error: task.error, activityReportGroups: [] });
+                // ERROR
+                this.setState({ activityReportGroups: undefined, error: task.error });
                 this.stopLoading();
             } else if (task.activityReportGroups) {
+                // SUCCESS
                 const activityReportGroups: ActivityReportGroup[] = task.activityReportGroups;
                 for (let i = 0; i < activityReportGroups.length; i++)
-                    activityReportGroups[i] = Object.assign(new ActivityReportGroup(), activityReportGroups[i]);
+                    activityReportGroups[i] = Object.assign(
+                        new ActivityReportGroup(),
+                        activityReportGroups[i]
+                    );
                 this.setState({ error: undefined, activityReportGroups: activityReportGroups });
                 this.stopLoading();
             } else {
+                // WAIT MORE
                 this.setState({ loadingTotal: task.total, loadingDone: task.done });
                 this.loadingTaskTimer = window.setTimeout(() => this.checkLoaded(), 500);
             }
         } else {
-            this.setState({ error: await response.text(), activityReportGroups: [] });
+            this.setState({ activityReportGroups: undefined, error: await response.text() });
             this.stopLoading();
         }
     }
