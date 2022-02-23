@@ -82,7 +82,7 @@ func (me *ReportGenerator) buildReport(repositoryLogEntries git_stories_api.Repo
 		groups = append(groups, reportGroup)
 	}
 	sort.Slice(groups, func(i, j int) bool {
-		return groups[i].Time.Before(groups[j].Time)
+		return groups[i].Time.After(groups[j].Time)
 	})
 	return
 }
