@@ -61,7 +61,7 @@ func (reader *cachedGitClient_DetailedLogReader) Load(logEntries RepositoryLogEn
 	reader.allLogEntries = logEntries
 	var logEntryGroups = logEntries.GetPortions(CACHED_GIT_CLIENT_PAGE_SIZE)
 	for groupIndex, logEntries := range logEntryGroups {
-		if e := reader.loadRows(groupIndex, logEntries); e != nil {
+		if e := reader.loadEntries(groupIndex, logEntries); e != nil {
 			return e
 		}
 		if len(reader.newEntries) > 0 {
@@ -74,14 +74,15 @@ func (reader *cachedGitClient_DetailedLogReader) Load(logEntries RepositoryLogEn
 	return nil
 }
 
-func (reader *cachedGitClient_DetailedLogReader) loadRows(groupIndex int, logEntries RepositoryLogEntryHeaders) error {
-	for entryIndex, entry := range logEntries {
-		var logEntry, e = reader.storage.ReadRepositoryLogEntry(entry.CommitHash)
-		if e != nil {
-			return e
-		}
+func (reader *cachedGitClient_DetailedLogReader) loadEntries(groupIndex int, logHeaders RepositoryLogEntryHeaders) error {
+	var cachedEntries, e = reader.loadCachedEntries(logHeaders)
+	if e != nil {
+		return e
+	}
+	for headerIndex, header := range logHeaders {
+		var logEntry = cachedEntries[header.CommitHash]
 		if logEntry == nil { // new row
-			var newLogEntry, e = reader.gitClient.ReadDetailedLogEntryRow(entry)
+			var newLogEntry, e = reader.gitClient.ReadDetailedLogEntryRow(header)
 			if nil != e {
 				return e
 			}
@@ -90,11 +91,29 @@ func (reader *cachedGitClient_DetailedLogReader) loadRows(groupIndex int, logEnt
 		}
 		reader.entries = append(reader.entries, logEntry)
 		if reader.receiveProgress != nil {
-			var overallEntryIndex = (CACHED_GIT_CLIENT_PAGE_SIZE * groupIndex) + entryIndex
+			var overallEntryIndex = (CACHED_GIT_CLIENT_PAGE_SIZE * groupIndex) + headerIndex
 			reader.receiveProgress(len(reader.allLogEntries), overallEntryIndex)
 		}
 	}
 	return nil
+}
+
+func (reader *cachedGitClient_DetailedLogReader) loadCachedEntries(logHeaders RepositoryLogEntryHeaders) (
+	map[string]*git_stories_api.RepositoryLogEntry, error,
+) {
+	var commitHashes = make([]string, len(logHeaders))
+	for i := range logHeaders {
+		commitHashes[i] = logHeaders[i].CommitHash
+	}
+	var entryArray, e = reader.storage.ReadRepositoryLogEntries(commitHashes)
+	if e != nil {
+		return nil, e
+	}
+	var entryMap = make(map[string]*git_stories_api.RepositoryLogEntry)
+	for _, entry := range entryArray {
+		entryMap[entry.CommitHash] = entry
+	}
+	return entryMap, nil
 }
 
 func (reader *cachedGitClient_DetailedLogReader) GetRows() []*git_stories_api.RepositoryLogEntry {
