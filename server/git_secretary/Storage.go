@@ -30,7 +30,9 @@ func (me *Storage) Create() *Storage {
 	return me
 }
 
-func (me *Storage) ReadRepositoryLogEntry(commitHash string) (result *git_stories_api.RepositoryLogEntry, e error) {
+func (me *Storage) ReadRepositoryLogEntry(commitHash string) (
+	result *git_stories_api.RepositoryLogEntry, e error,
+) {
 	e = me.db.View(func(transaction *bolt.Tx) error {
 		var bucket = transaction.Bucket(me.RepositoryLogEntriesBucketNameBytes)
 		if bucket != nil {
@@ -40,6 +42,29 @@ func (me *Storage) ReadRepositoryLogEntry(commitHash string) (result *git_storie
 				var jsonError = json.Unmarshal(cachedRowBytes, result)
 				if nil != jsonError {
 					return jsonError
+				}
+			}
+		}
+		return nil
+	})
+	return
+}
+
+func (me *Storage) ReadRepositoryLogEntries(commitHashes []string) (
+	result []*git_stories_api.RepositoryLogEntry, e error,
+) {
+	e = me.db.View(func(transaction *bolt.Tx) error {
+		var bucket = transaction.Bucket(me.RepositoryLogEntriesBucketNameBytes)
+		if bucket != nil {
+			for _, commitHash := range commitHashes {
+				var cachedRowBytes = bucket.Get([]byte(commitHash))
+				if cachedRowBytes != nil {
+					var entry = &git_stories_api.RepositoryLogEntry{}
+					var jsonError = json.Unmarshal(cachedRowBytes, entry)
+					if nil != jsonError {
+						return jsonError
+					}
+					result = append(result, entry)
 				}
 			}
 		}
