@@ -11,13 +11,15 @@ import (
 const GitRootNodeHash = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 
 var GitShowFormat = struct {
-	AuthorTime string // author date, UNIX AuthorTime
-	NewLine    string
-	AuthorName string // author name (respecting .mailmap)
+	AuthorTime       string // author date, UNIX timestamp
+	NewLine          string
+	AuthorName       string
+	AuthorNameMapped string // author name (respecting .mailmap)
 }{
-	AuthorTime: "%at",
-	NewLine:    "%n",
-	AuthorName: "%aN",
+	AuthorTime:       "%at",
+	NewLine:          "%n",
+	AuthorName:       "%an",
+	AuthorNameMapped: "%aN",
 }
 
 func GitParseSummaryCount(text string) int {
